@@ -1,0 +1,359 @@
+{# 手册 UI 通用骨架基类。
+
+根据 `shell` 变量切换 4 套头尾结构：classic-left / top-ribbon / app-rail / split-panel。
+业务模板只需：
+  {% extends "partials/_shell.html" %}
+  {% block head_extra %}…{% endblock %}   （可选：局部样式、图表 script 引入）
+  {% block content %}…{% endblock %}       （必填：页面主体）
+  {% block body_scripts %}…{% endblock %}  （可选：放在 </body> 前的脚本，如 Chart.js）
+
+由 Python 传入的 context（所有页面一致）：
+  software_name, module_title, page_title,
+  menu[], active_id, op_user, avatar_char,
+  base_css, body_classes, shell,
+  crumb_text,            — 面包屑字符串
+  brand_mark_html,       — 品牌小标 HTML（safe）
+#}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>{{ software_name }}{% if page_title %} - {{ page_title }}{% endif %}</title>
+<style>{{ base_css }}</style>
+{% block head_extra %}{% endblock %}
+</head>
+<body class="{{ body_classes }}">
+
+{# ——— classic-left: 220px 浅色侧栏 + 56px 面包屑顶栏 ——— #}
+{% if shell == 'classic-left' %}
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <nav class="menu">
+      {% for item in menu %}
+      <div class="menu-item {% if item.id == active_id %}active{% endif %}">
+        <span class="menu-icon">●</span><span>{{ item.name }}</span>
+      </div>
+      {% endfor %}
+    </nav>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="crumb">{{ crumb_text }}</div>
+      <div class="user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+    </div>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{# ——— top-ribbon: 64px 品牌顶 + 48px tab 条，无左栏 ——— #}
+{% elif shell == 'top-ribbon' %}
+<div class="app">
+  <header class="ribbon-top">
+    <div class="ribbon-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <div class="ribbon-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+  </header>
+  <nav class="ribbon-tabs">
+    {% for item in menu[:8] %}
+    <div class="ribbon-tab {% if item.id == active_id %}active{% endif %}">{{ item.name }}</div>
+    {% endfor %}
+  </nav>
+  <main class="main-full">
+    <div class="content">
+      <div class="crumb-inline">{{ crumb_text }}</div>
+      {% block content_ribbon %}{{ self.content() }}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{# ——— app-rail: 64px 深色窄图标条，无顶栏，content 内嵌页头 ——— #}
+{% elif shell == 'app-rail' %}
+<div class="app">
+  <aside class="rail">
+    <div class="rail-brand">{{ software_name[:1] }}</div>
+    {% for item in menu[:8] %}
+    <div class="rail-item {% if item.id == active_id %}active{% endif %}">
+      <div class="rail-icon">●</div>
+      <span class="rail-label">{{ item.name[:3] }}</span>
+    </div>
+    {% endfor %}
+  </aside>
+  <main class="main-rail">
+    <div class="content">
+      <div class="inline-header">
+        <div>
+          <div class="inline-title">{{ software_name }}{% if module_title %} · {{ module_title }}{% endif %}</div>
+          <div class="crumb-inline">{{ crumb_text }}</div>
+        </div>
+        <div class="inline-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+      </div>
+      {% block content_rail %}{{ self.content() }}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{# ——— split-panel: 顶 56 + 左 280 功能面板（搜索+快捷+树） ——— #}
+{% elif shell == 'split-panel' %}
+<div class="app">
+  <header class="split-top">
+    <div class="split-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <div class="split-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+  </header>
+  <div class="split-body">
+    <aside class="split-panel">
+      <div class="panel-search"><input placeholder="搜索功能 / 记录..."/></div>
+      <div class="panel-quick">
+        <button class="btn btn-add">+ 新建</button>
+        <button class="btn btn-outline">导入</button>
+        <button class="btn btn-outline">我的</button>
+      </div>
+      <div class="panel-tree">
+        <div class="tree-section">功能导航</div>
+        {% for item in menu %}
+        <div class="tree-item {% if item.id == active_id %}active{% endif %}">
+          <span class="tree-caret">▸</span><span>{{ item.name }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </aside>
+    <main class="split-main">
+      <div class="content">
+        <div class="crumb-inline">{{ crumb_text }}</div>
+        {% block content_split %}{{ self.content() }}{% endblock %}
+      </div>
+    </main>
+  </div>
+</div>
+
+{# ——— stacked-rail: 64 深图标条 + 220 浅二级菜单（三段式） ——— #}
+{% elif shell == 'stacked-rail' %}
+<div class="app">
+  <aside class="rail">
+    <div class="rail-brand">{{ software_name[:1] }}</div>
+    {% for item in menu[:8] %}
+    <div class="rail-item {% if item.id == active_id %}active{% endif %}">
+      <div class="rail-icon">●</div>
+      <span class="rail-label">{{ item.name[:3] }}</span>
+    </div>
+    {% endfor %}
+  </aside>
+  <aside class="secondary-list">
+    <div class="sec-header">
+      <span>{{ module_title or software_name }}</span>
+      <span class="count">{{ menu|length }} 项</span>
+    </div>
+    <div class="sec-list">
+      {% for item in menu %}
+      <div class="sec-item {% if item.id == active_id %}active{% endif %}">
+        <span class="sec-title">{{ item.name }}</span>
+        <span class="sec-sub">功能模块 · 点击查看</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="stacked-user"><div class="avatar">{{ avatar_char }}</div><span>{{ op_user }}</span></div>
+  </aside>
+  <main class="main-stacked">
+    <div class="content">
+      <div class="crumb-inline">{{ crumb_text }}</div>
+      {% block content_stacked %}{{ self.content() }}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{# ——— sidebar-right: 顶品牌 + content + 220 右侧栏（镜像） ——— #}
+{% elif shell == 'sidebar-right' %}
+<div class="app">
+  <header class="right-top">
+    <div class="right-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <div class="right-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+  </header>
+  <div class="right-body">
+    <main class="right-main">
+      <div class="content">
+        <div class="crumb-inline">{{ crumb_text }}</div>
+        {% block content_right %}{{ self.content() }}{% endblock %}
+      </div>
+    </main>
+    <aside class="side-right">
+      <nav class="menu">
+        {% for item in menu %}
+        <div class="menu-item {% if item.id == active_id %}active{% endif %}">
+          <span class="menu-icon">●</span><span>{{ item.name }}</span>
+        </div>
+        {% endfor %}
+      </nav>
+    </aside>
+  </div>
+</div>
+
+{# ——— minimal-topbar: 40 超薄顶栏（菜单在此）+ content 居中 1080 ——— #}
+{% elif shell == 'minimal-topbar' %}
+<div class="app">
+  <header class="min-top">
+    <div class="min-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <nav class="min-menu">
+      {% for item in menu[:8] %}
+      <div class="min-item {% if item.id == active_id %}active{% endif %}">{{ item.name }}</div>
+      {% endfor %}
+    </nav>
+    <div class="min-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+  </header>
+  <main class="main-centered">
+    <div class="content">
+      <div class="crumb-inline">{{ crumb_text }}</div>
+      {% block content_min %}{{ self.content() }}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{# ——— dark-console: 全暗黑主题（深色顶 + 深左栏 + 深 content） ——— #}
+{% elif shell == 'dark-console' %}
+<div class="app">
+  <aside class="dc-sidebar">
+    <div class="dc-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <nav class="dc-menu">
+      {% for item in menu %}
+      <div class="dc-menu-item {% if item.id == active_id %}active{% endif %}">
+        <span class="menu-icon">●</span><span>{{ item.name }}</span>
+      </div>
+      {% endfor %}
+    </nav>
+  </aside>
+  <main class="dc-main">
+    <div class="dc-topbar">
+      <div class="dc-crumb">{{ crumb_text }}</div>
+      <div class="dc-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+    </div>
+    <div class="content">
+      {% block content_dark %}{{ self.content() }}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{# ——— split-horizontal: 上下分区，顶部 240 大 banner + 下全宽 content ——— #}
+{% elif shell == 'split-horizontal' %}
+<div class="app">
+  <header class="sh-top">
+    <div class="sh-row-1">
+      <div class="sh-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+      <div class="sh-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+    </div>
+    <div>
+      <div class="sh-title">{{ module_title or software_name }}</div>
+      <div class="sh-crumb">{{ crumb_text }}</div>
+    </div>
+    <nav class="sh-menu">
+      {% for item in menu[:8] %}
+      <div class="sh-menu-item {% if item.id == active_id %}active{% endif %}">{{ item.name }}</div>
+      {% endfor %}
+    </nav>
+    <div class="sh-kpis">
+      <div class="sh-kpi"><div class="sh-kpi-label">今日新增</div><div class="sh-kpi-value">36</div></div>
+      <div class="sh-kpi"><div class="sh-kpi-label">处理中</div><div class="sh-kpi-value">128</div></div>
+      <div class="sh-kpi"><div class="sh-kpi-label">已完成</div><div class="sh-kpi-value">240</div></div>
+      <div class="sh-kpi"><div class="sh-kpi-label">满意度</div><div class="sh-kpi-value">96%</div></div>
+    </div>
+  </header>
+  <main class="sh-main">
+    <div class="content">{% block content_sh %}{{ self.content() }}{% endblock %}</div>
+  </main>
+</div>
+
+{# ——— floating-card: 灰底 + 中央浮动 1180 大白卡 ——— #}
+{% elif shell == 'floating-card' %}
+<div class="app">
+  <aside class="fc-sidebar">
+    <div class="fc-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+    <nav class="fc-menu">
+      {% for item in menu %}
+      <div class="fc-menu-item {% if item.id == active_id %}active{% endif %}">
+        <span class="menu-icon">●</span><span>{{ item.name }}</span>
+      </div>
+      {% endfor %}
+    </nav>
+    <div class="fc-user"><div class="avatar">{{ avatar_char }}</div><span>{{ op_user }}</span></div>
+  </aside>
+  <main class="fc-main">
+    <div class="fc-topbar">
+      <div class="fc-crumb">{{ crumb_text }}</div>
+      <div class="fc-toolbar">最后同步 · 刚刚</div>
+    </div>
+    <div class="content">{% block content_fc %}{{ self.content() }}{% endblock %}</div>
+  </main>
+</div>
+
+{# ——— window-chrome: 48 窗口标题栏（红黄绿） + 200 左栏 + content ——— #}
+{% elif shell == 'window-chrome' %}
+<div class="app">
+  <div class="wc-title-bar">
+    <div class="wc-dots">
+      <span class="wc-dot red"></span>
+      <span class="wc-dot yellow"></span>
+      <span class="wc-dot green"></span>
+    </div>
+    <div class="wc-title">{{ software_name }}{% if module_title %} — {{ module_title }}{% endif %}</div>
+  </div>
+  <div class="wc-body">
+    <aside class="wc-sidebar">
+      <div class="wc-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+      <nav class="wc-menu">
+        {% for item in menu %}
+        <div class="wc-menu-item {% if item.id == active_id %}active{% endif %}">
+          <span class="menu-icon">●</span><span>{{ item.name }}</span>
+        </div>
+        {% endfor %}
+      </nav>
+    </aside>
+    <main class="wc-main">
+      <div class="wc-topbar">
+        <div class="wc-crumb">{{ crumb_text }}</div>
+        <div class="wc-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+      </div>
+      <div class="content">{% block content_wc %}{{ self.content() }}{% endblock %}</div>
+    </main>
+  </div>
+</div>
+
+{# ——— hero-dashboard: 160 banner + 200 左栏 + content ——— #}
+{% elif shell == 'hero-dashboard' %}
+<div class="app">
+  <header class="hero">
+    <div class="hero-row">
+      <div class="hero-brand">{{ brand_mark_html|safe }}{{ software_name }}</div>
+      <div class="hero-user"><span>{{ op_user }}</span><div class="avatar">{{ avatar_char }}</div></div>
+    </div>
+    <div>
+      <div class="hero-title">{{ module_title or software_name }}</div>
+      <div class="hero-sub">{{ crumb_text }}</div>
+    </div>
+    <div class="hero-bottom">
+      <div class="hero-search">🔍 搜索功能、数据或操作…</div>
+      <div class="hero-quick">
+        <button class="hero-btn">+ 新建</button>
+        <button class="hero-btn">导入</button>
+        <button class="hero-btn">我的</button>
+      </div>
+    </div>
+  </header>
+  <div class="hero-body">
+    <aside class="hero-side">
+      <div class="hero-side-section">功能导航</div>
+      {% for item in menu %}
+      <div class="hero-side-item {% if item.id == active_id %}active{% endif %}">{{ item.name }}</div>
+      {% endfor %}
+    </aside>
+    <main class="hero-main">
+      <div class="content">
+        {% block content_hero %}{{ self.content() }}{% endblock %}
+      </div>
+    </main>
+  </div>
+</div>
+
+{% endif %}
+
+{% block body_scripts %}{% endblock %}
+</body>
+</html>

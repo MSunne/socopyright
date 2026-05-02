@@ -1,0 +1,65 @@
+{% extends "partials/_shell.html" %}
+{% block content %}
+<!-- 指标卡 -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px;">
+  {% for m in metrics %}
+  <div class="card" style="margin:0; padding: 14px 16px;">
+    <div style="color: var(--text-soft); font-size: 12px;">{{ m.label }}</div>
+    <div style="font-size: 22px; font-weight: 600; margin-top: 6px; color: var(--color-dark);">{{ m.value }}</div>
+    <div style="font-size: 11px; color: #10b981; margin-top: 4px;">{{ m.trend }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2>{{ table_title }}</h2>
+  <div class="filters">
+    {% for f in filters %}
+    <input placeholder="{{ f }}"/>
+    {% endfor %}
+    <button class="btn-primary">搜索</button>
+    <button class="btn-ghost">重置</button>
+  </div>
+  <div class="toolbar">
+    <button class="btn btn-add">+ 新建</button>
+    <button class="btn btn-outline">导出</button>
+    <button class="btn btn-outline">批量操作</button>
+  </div>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr>
+      <th style="width:40px;"><input type="checkbox"/></th>
+      <th style="width:48px;">序号</th>
+      {% for c in columns %}<th>{{ c }}</th>{% endfor %}
+      <th style="width:120px;">操作</th>
+    </tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><input type="checkbox"/></td>
+        <td>{{ loop.index }}</td>
+        {% for v in r.cols %}
+        <td>
+          {% if v is mapping %}
+            <span class="badge {{ v.badge }}">{{ v.text }}</span>
+          {% else %}
+            {{ v }}
+          {% endif %}
+        </td>
+        {% endfor %}
+        <td><a href="#" style="color: var(--color-accent);">详情</a> · <a href="#" style="color:#6b7280;">编辑</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="pagination">
+    <span>共 {{ total_count }} 条</span>
+    <button class="page">&lt;</button>
+    <button class="page active">1</button>
+    <button class="page">2</button>
+    <button class="page">3</button>
+    <button class="page">&gt;</button>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "partials/_shell.html" %}
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.chart-card {
+  background: var(--card-bg); border: var(--card-border); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 16px 18px;
+}
+.chart-card h3 { font-size: 13px; font-weight: 600; color: #1f2937; margin-bottom: 12px; }
+.chart-card .sub { color: #6b7280; font-size: 11px; margin-bottom: 6px; }
+.chart-card canvas { width: 100% !important; height: 210px !important; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.kpi-card {
+  background: var(--card-bg); border: var(--card-border); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 14px 16px;
+}
+.kpi-label { color: #64748b; font-size: 11px; }
+.kpi-value { font-size: 22px; font-weight: 600; color: var(--color-dark); margin: 4px 0; }
+.kpi-trend { font-size: 10.5px; color: #10b981; }
+.kpi-trend.down { color: #ef4444; }
+</style>
+{% endblock %}
+{% block content %}
+<div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+  <h2 style="font-size:16px; font-weight:600;">{{ chart_page_title }}</h2>
+  <div style="display:flex; gap:8px;">
+    <button class="btn btn-outline">近 7 天</button>
+    <button class="btn btn-add">近 30 天</button>
+    <button class="btn btn-outline">自定义</button>
+    <button class="btn btn-outline">导出</button>
+  </div>
+</div>
+
+<div class="kpi-row">
+  {% for k in kpis %}
+  <div class="kpi-card">
+    <div class="kpi-label">{{ k.label }}</div>
+    <div class="kpi-value">{{ k.value }}</div>
+    <div class="kpi-trend {% if k.down %}down{% endif %}">{{ k.trend }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>{{ line_title }}</h3>
+    <div class="sub">{{ line_sub }}</div>
+    <canvas id="c1"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>{{ bar_title }}</h3>
+    <div class="sub">{{ bar_sub }}</div>
+    <canvas id="c2"></canvas>
+  </div>
+</div>
+<div class="chart-row">
+  <div class="chart-card">
+    <h3>{{ doughnut_title }}</h3>
+    <div class="sub">{{ doughnut_sub }}</div>
+    <canvas id="c3"></canvas>
+  </div>
+  <div class="chart-card">
+    <h3>{{ area_title }}</h3>
+    <div class="sub">{{ area_sub }}</div>
+    <canvas id="c4"></canvas>
+  </div>
+</div>
+{% endblock %}
+{% block body_scripts %}
+<script>
+const ACCENT = "{{ COLOR_ACCENT }}";
+const DARK = "{{ COLOR_DARK }}";
+
+new Chart(document.getElementById('c1'), {
+  type: 'line',
+  data: {
+    labels: {{ line_labels | tojson }},
+    datasets: [{
+      label: '{{ line_label }}',
+      data: {{ line_data | tojson }},
+      borderColor: ACCENT, backgroundColor: ACCENT + '22',
+      fill: true, tension: 0.35, pointRadius: 3,
+    }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('c2'), {
+  type: 'bar',
+  data: {
+    labels: {{ bar_labels | tojson }},
+    datasets: [{
+      label: '{{ bar_label }}',
+      data: {{ bar_data | tojson }},
+      backgroundColor: [ACCENT, '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#14b8a6']
+    }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('c3'), {
+  type: 'doughnut',
+  data: {
+    labels: {{ doughnut_labels | tojson }},
+    datasets: [{
+      data: {{ doughnut_data | tojson }},
+      backgroundColor: [ACCENT, '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444']
+    }]
+  },
+  options: { plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } } }
+});
+
+new Chart(document.getElementById('c4'), {
+  type: 'line',
+  data: {
+    labels: {{ area_labels | tojson }},
+    datasets: [
+      { label: '{{ area_series[0].name }}', data: {{ area_series[0].data | tojson }}, borderColor: ACCENT, backgroundColor: ACCENT + '55', fill: true, tension: 0.3 },
+      { label: '{{ area_series[1].name }}', data: {{ area_series[1].data | tojson }}, borderColor: '#10b981', backgroundColor: '#10b98155', fill: true, tension: 0.3 },
+    ]
+  },
+  options: { plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } }, scales: { y: { beginAtZero: true, stacked: true } } }
+});
+</script>
+{% endblock %}

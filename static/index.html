@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>软著申请自动生成系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
+          },
+          fontFamily: {
+            sans: ['"PingFang SC"','"Microsoft YaHei"','-apple-system','"Segoe UI"','Roboto','"Helvetica Neue"','Arial','sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <style>
+    body { font-feature-settings: "cv02","cv03","cv04"; }
+    .glass { backdrop-filter: saturate(140%) blur(8px); }
+    .ring-soft { box-shadow: 0 0 0 1px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.05); }
+    .card { background: #fff; border-radius: 14px; box-shadow: 0 0 0 1px rgb(15 23 42 / 0.04), 0 2px 8px rgb(15 23 42 / 0.04); }
+    .card-hover:hover { box-shadow: 0 0 0 1px rgb(79 70 229 / 0.15), 0 8px 24px rgb(15 23 42 / 0.06); transition: box-shadow 0.18s; }
+    .field-label { font-size:12px; color:#64748b; font-weight:500; letter-spacing:0.2px; }
+    .field-input, .field-select, .field-textarea {
+      width:100%; padding:9px 12px; border-radius:9px; border:1px solid #e2e8f0;
+      background:#fff; color:#0f172a; font-size:14px; outline:none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+      border-color:#818cf8; box-shadow: 0 0 0 4px rgb(99 102 241 / 0.10);
+    }
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:9px; font-size:13.5px; font-weight:500; transition: all .15s; cursor:pointer; border:1px solid transparent; }
+    .btn-primary { background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%); color:#fff; box-shadow: 0 2px 6px rgb(79 70 229 / 0.30); }
+    .btn-primary:hover { background:linear-gradient(135deg,#4f46e5 0%,#4338ca 100%); box-shadow: 0 4px 12px rgb(79 70 229 / 0.35); }
+    .btn-primary:disabled { background:#e2e8f0; color:#94a3b8; box-shadow:none; cursor:not-allowed; }
+    .btn-ghost { background:#fff; border-color:#e2e8f0; color:#475569; }
+    .btn-ghost:hover { background:#f8fafc; border-color:#cbd5e1; }
+    .btn-sm { padding:5px 10px; font-size:12px; border-radius:7px; }
+    .badge-dot { display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:500; }
+    .badge-dot::before { content:""; width:6px; height:6px; border-radius:50%; }
+    .badge-pending::before { background:#94a3b8; } .badge-pending { background:#f1f5f9; color:#475569; }
+    .badge-running::before { background:#3b82f6; animation: pulse 1.5s infinite; } .badge-running { background:#dbeafe; color:#1d4ed8; }
+    .badge-success::before { background:#10b981; } .badge-success { background:#d1fae5; color:#047857; }
+    .badge-failed::before { background:#ef4444; } .badge-failed { background:#fee2e2; color:#b91c1c; }
+    .badge-partial::before { background:#f59e0b; } .badge-partial { background:#fef3c7; color:#92400e; }
+    .badge-generating::before { background:#3b82f6; animation: pulse 1.5s infinite; } .badge-generating { background:#dbeafe; color:#1d4ed8; }
+    .badge-done::before { background:#10b981; } .badge-done { background:#d1fae5; color:#047857; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+    .progress-track { height:6px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+    .progress-bar { height:100%; border-radius:999px; transition: width .4s ease-out; background: linear-gradient(90deg,#6366f1,#4f46e5); }
+    .progress-bar.shimmer { background: linear-gradient(90deg,#6366f1,#a5b4fc,#6366f1); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+    .progress-bar.success { background: linear-gradient(90deg,#10b981,#059669); }
+    .progress-bar.failed { background: linear-gradient(90deg,#ef4444,#dc2626); }
+    .divider { height:1px; background:linear-gradient(90deg,transparent,#e2e8f0,transparent); margin:18px 0; }
+    .bg-grid {
+      background-image:
+        radial-gradient(circle at 1px 1px, rgb(15 23 42 / 0.05) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+    .gradient-mesh {
+      background:
+        radial-gradient(at 20% 0%, rgb(99 102 241 / 0.18) 0px, transparent 50%),
+        radial-gradient(at 80% 0%, rgb(168 85 247 / 0.12) 0px, transparent 50%),
+        radial-gradient(at 0% 50%, rgb(59 130 246 / 0.12) 0px, transparent 50%);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen" x-data="app()" x-init="init()" x-cloak>
+
+<!-- ============ 登录页 ============ -->
+<div x-show="!token" class="min-h-screen flex items-center justify-center p-4 gradient-mesh bg-grid">
+  <div class="card ring-soft overflow-hidden flex w-full max-w-4xl" style="min-height:520px;">
+    <!-- 左：品牌面板 -->
+    <div class="hidden md:flex md:w-5/12 p-10 text-white flex-col justify-between" style="background:linear-gradient(135deg,#312e81 0%,#4338ca 40%,#6366f1 100%);">
+      <div>
+        <div class="flex items-center gap-2 mb-10">
+          <div class="w-9 h-9 rounded-lg bg-white/15 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <div class="font-semibold text-lg">软著申请系统</div>
+        </div>
+        <h1 class="text-2xl font-semibold leading-snug mb-3">批量生成可提交的<br/>软件著作权登记材料</h1>
+        <p class="text-white/70 text-sm leading-relaxed">基于 AI 的四件套自动生成：申请表、功能特点、用户手册、源代码。内容严格对齐，一次性通过中国版权保护中心审核。</p>
+
+        <div class="mt-10 space-y-4 text-sm">
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg bg-white/15 flex-shrink-0 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="font-medium">四件套全链路一致</div><div class="text-white/60 text-xs mt-0.5">统一数据源渲染，杜绝字段串号</div></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg bg-white/15 flex-shrink-0 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="font-medium">真实界面截图</div><div class="text-white/60 text-xs mt-0.5">Playwright 渲染完整后台 UI，非拼凑</div></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg bg-white/15 flex-shrink-0 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="font-medium">2025 新规已适配</div><div class="text-white/60 text-xs mt-0.5">手抄声明区/签字盖章位置自动留白</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="text-xs text-white/50">© 2026 · 软著申请自动生成</div>
+    </div>
+
+    <!-- 右：登录表单 -->
+    <div class="w-full md:w-7/12 p-10 flex flex-col justify-center">
+      <div class="max-w-sm w-full mx-auto">
+        <h2 class="text-2xl font-semibold mb-1">欢迎回来</h2>
+        <p class="text-slate-500 text-sm mb-8">请使用管理员分配的账号登录</p>
+        <form @submit.prevent="login()" class="space-y-4">
+          <div>
+            <div class="field-label mb-1.5">用户名</div>
+            <input x-model="loginForm.username" class="field-input" placeholder="输入用户名" required autofocus />
+          </div>
+          <div>
+            <div class="field-label mb-1.5">密码</div>
+            <input x-model="loginForm.password" type="password" class="field-input" placeholder="输入密码" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-full justify-center !py-2.5" :disabled="loggingIn">
+            <svg x-show="loggingIn" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+            <span x-text="loggingIn ? '登录中...' : '登 录'"></span>
+          </button>
+          <div x-show="loginError" x-transition class="flex items-start gap-2 text-red-600 text-sm bg-red-50 border border-red-100 p-2.5 rounded-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span x-text="loginError"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 主应用 ============ -->
+<div x-show="token" x-cloak>
+  <!-- 顶部 -->
+  <header class="bg-white/80 glass border-b border-slate-200/80 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#6366f1,#4338ca);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <div class="font-semibold text-sm leading-tight">软著申请系统</div>
+          <div class="text-[11px] text-slate-500 leading-tight">Software Copyright Generator</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 text-sm">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);" x-text="username.slice(0,1).toUpperCase()"></div>
+          <span class="text-slate-600 hidden sm:block" x-text="username"></span>
+        </div>
+        <button @click="logout()" class="btn btn-ghost btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          退出
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8 space-y-6">
+
+    <!-- 统计卡 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="card p-4">
+        <div class="text-xs text-slate-500">进行中</div>
+        <div class="text-2xl font-semibold text-blue-600 mt-1" x-text="activeJobs.filter(j=>j.status==='running').length"></div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-500">排队等待</div>
+        <div class="text-2xl font-semibold text-slate-700 mt-1" x-text="activeJobs.filter(j=>j.status==='pending').length"></div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-500">历史记录</div>
+        <div class="text-2xl font-semibold text-emerald-600 mt-1" x-text="historyTotal"></div>
+        <div class="text-[10px] text-slate-400 mt-0.5" x-show="historyQuery||historyStatus">（当前筛选）</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-500">总耗时（估算）</div>
+        <div class="text-2xl font-semibold text-slate-700 mt-1" x-text="activeJobs.length > 0 ? (activeJobs.reduce((s,j)=>s + (j.quantity * (j.template==='rich'?6:3)), 0)) + ' 分钟' : '—'"></div>
+        <div class="text-[10px] text-slate-400 mt-0.5">活跃任务剩余</div>
+      </div>
+    </div>
+
+    <!-- 新建任务卡 -->
+    <section class="card overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div>
+          <h2 class="font-semibold">新建软著生成任务</h2>
+          <p class="text-xs text-slate-500 mt-0.5">输入企业信息与生成数量，系统将自动生成完整申请材料 zip 包</p>
+        </div>
+      </div>
+      <form @submit.prevent="submitJob()" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <div>
+          <div class="field-label mb-1.5">公司名称 <span class="text-red-500">*</span></div>
+          <input x-model="jobForm.company_name" class="field-input" placeholder="例如：武汉兰亭印务有限公司" required />
+        </div>
+        <div>
+          <div class="field-label mb-1.5">统一社会信用代码 <span class="text-red-500">*</span></div>
+          <input x-model="jobForm.uscc" maxlength="18" minlength="18" class="field-input font-mono" placeholder="18 位字母数字组合" required />
+        </div>
+        <div>
+          <div class="field-label mb-1.5">公司成立日期 <span class="text-red-500">*</span></div>
+          <input type="date" x-model="jobForm.established_date" class="field-input" required />
+        </div>
+        <div>
+          <div class="field-label mb-1.5">生成数量 <span class="text-red-500">*</span></div>
+          <input type="number" min="1" max="50" x-model.number="jobForm.quantity" class="field-input" required />
+        </div>
+        <div class="md:col-span-2">
+          <div class="field-label mb-1.5">系统关键词 <span class="text-slate-400 font-normal">（可选 · 多个用逗号/换行分隔 · 不足时 AI 自动补齐）</span></div>
+          <textarea x-model="jobForm.keywords_raw" rows="2" class="field-textarea" placeholder="如：印刷缺陷检测, 生产全流程管理"></textarea>
+        </div>
+        <div>
+          <div class="field-label mb-1.5">编程语言</div>
+          <select x-model="jobForm.language" class="field-select">
+            <option value="">由 AI 智能选择</option>
+            <option>Java</option><option>Go</option><option>Python</option>
+            <option>C++</option><option>C#</option>
+            <option>JavaScript</option><option>TypeScript</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label mb-1.5">手册模板</div>
+          <select x-model="jobForm.template" class="field-select">
+            <option value="basic">基础版 · 12 张截图 · 2-4 分钟/份</option>
+            <option value="rich">丰富版 · 18-60 张截图 · 5-8 分钟/份</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 flex items-center justify-between border-t border-slate-100 pt-5 -mx-6 px-6 -mb-6 pb-5 bg-slate-50/50">
+          <div x-show="jobError" class="text-red-600 text-sm flex items-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span x-text="jobError"></span>
+          </div>
+          <div class="flex items-center gap-3 ml-auto">
+            <div class="text-xs text-slate-500" x-show="jobForm.quantity>0">
+              预计耗时约 <span x-text="estimatedMinutes()"></span> 分钟
+            </div>
+            <button type="submit" class="btn btn-primary" :disabled="submitting">
+              <svg x-show="!submitting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+              <svg x-show="submitting" class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+              <span x-text="submitting ? '创建中...' : '开始生成'"></span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- 进行中 -->
+    <section class="card overflow-hidden" x-show="activeJobs.length>0">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <h2 class="font-semibold">正在进行 <span class="text-sm text-slate-400 font-normal" x-text="'(' + activeJobs.length + ')'"></span></h2>
+        </div>
+      </div>
+      <div class="divide-y divide-slate-100">
+        <template x-for="j in activeJobs" :key="j.id">
+          <div class="px-6 py-4">
+            <!-- 主行 -->
+            <div class="flex items-start gap-4">
+              <!-- 左侧：公司+标识 -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-medium truncate" x-text="j.company_name"></h3>
+                  <span class="badge-dot" :class="'badge-'+j.status" x-text="statusText(j.status)"></span>
+                  <span x-show="j.status==='pending' && queuePosition(j) > 0" class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                    队列第 <span x-text="queuePosition(j)"></span> 位
+                  </span>
+                  <span class="text-[11px] text-slate-400 font-mono" x-text="j.id.slice(0,8)"></span>
+                </div>
+                <div class="mt-1.5 flex items-center gap-x-3 gap-y-1 text-xs text-slate-500 flex-wrap">
+                  <span class="flex items-center gap-1">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span x-text="formatTime(j.created_at)"></span>
+                  </span>
+                  <span>·</span>
+                  <span x-text="'共 ' + j.quantity + ' 份'"></span>
+                  <span>·</span>
+                  <span x-text="j.template==='rich'?'丰富版':'基础版'"></span>
+                  <template x-if="j.language"><span>·</span></template>
+                  <span x-show="j.language" x-text="j.language"></span>
+                </div>
+              </div>
+
+              <!-- 中：进度 -->
+              <div class="w-48 hidden md:block">
+                <div class="progress-track">
+                  <div class="progress-bar" :class="progressClass(j)" :style="`width:${j.progress||0}%`"></div>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 mt-1">
+                  <span x-text="(j.progress||0) + '%'"></span>
+                  <span x-show="j.finished_at" x-text="elapsedTime(j)" class="text-slate-400"></span>
+                </div>
+              </div>
+
+              <!-- 右：操作 -->
+              <div class="flex items-center gap-1.5">
+                <button @click="toggleDetail(j.id)" class="btn btn-ghost btn-sm">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="expanded===j.id ? 'rotate-180' : ''" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                  详情
+                </button>
+                <button x-show="j.status==='success' || j.status==='partial'" @click="downloadAll(j.id)"
+                        :disabled="!!downloading['job:'+j.id]" class="btn btn-primary btn-sm">
+                  <template x-if="!downloading['job:'+j.id]">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </template>
+                  <template x-if="downloading['job:'+j.id]">
+                    <svg class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  </template>
+                  <span x-text="downloading['job:'+j.id] ? '下载中...' : '下载 zip'"></span>
+                </button>
+                <button @click="confirmDelete(j)" class="btn btn-sm text-red-600 hover:bg-red-50" style="border:1px solid #fecaca;" title="取消 / 删除任务">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                  删除
+                </button>
+              </div>
+            </div>
+
+            <!-- 手机端进度条 -->
+            <div class="mt-3 md:hidden">
+              <div class="progress-track">
+                <div class="progress-bar" :class="progressClass(j)" :style="`width:${j.progress||0}%`"></div>
+              </div>
+              <div class="text-xs text-slate-500 mt-1" x-text="(j.progress||0)+'%'"></div>
+            </div>
+
+            <!-- 详情展开 -->
+            <div x-show="expanded===j.id" x-collapse class="mt-4 bg-slate-50 rounded-lg p-4 space-y-3">
+              <div x-show="j.error" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md p-2.5 flex items-start gap-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span x-text="j.error"></span>
+              </div>
+
+              <div x-show="detailLoading && expanded===j.id" class="flex items-center gap-2 text-xs text-slate-500 py-2">
+                <svg class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <span>加载中...</span>
+              </div>
+              <div x-show="!(detailLoading && expanded===j.id) && (j.files||[]).length===0" class="text-xs text-slate-500">
+                任务准备中，子任务列表还未生成...
+              </div>
+
+              <template x-for="f in (j.files||[])" :key="f.id">
+                <div class="bg-white rounded-lg p-3 ring-soft">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm font-medium truncate" :title="f.software_name" x-text="f.software_name"></span>
+                        <span class="badge-dot" :class="'badge-'+f.status" x-text="fileStatusText(f.status)"></span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-2">
+                        <div class="flex-1 progress-track" style="height:5px;">
+                          <div class="progress-bar" :class="progressClassFile(f)" :style="`width:${f.progress||0}%`"></div>
+                        </div>
+                        <span class="text-xs text-slate-500 w-9 text-right" x-text="(f.progress||0)+'%'"></span>
+                      </div>
+                      <div x-show="f.error" class="mt-1.5 text-xs text-red-600 truncate" :title="f.error" x-text="'✗ ' + f.error"></div>
+                    </div>
+                    <div class="flex gap-1.5">
+                      <button x-show="f.status==='done'" @click="downloadOne(j.id, f.id)"
+                              :disabled="!!downloading['file:'+f.id]" class="btn btn-ghost btn-sm">
+                        <template x-if="!downloading['file:'+f.id]">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </template>
+                        <template x-if="downloading['file:'+f.id]">
+                          <svg class="animate-spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        </template>
+                        <span x-text="downloading['file:'+f.id] ? '下载中...' : '下载'"></span>
+                      </button>
+                      <button x-show="f.status==='failed'" @click="retryOne(j.id, f.id)" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                        继续
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- 历史记录 -->
+    <section class="card overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h2 class="font-semibold">历史记录 <span class="text-sm text-slate-400 font-normal" x-text="'(共 ' + historyTotal + ' 条)'"></span></h2>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="relative">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input x-model="historyQuery" @input.debounce.400ms="loadHistory(1)" class="field-input !pl-8 !py-1.5 !text-sm" placeholder="搜索公司名..." style="width:200px;"/>
+          </div>
+          <select x-model="historyStatus" @change="loadHistory(1)" class="field-select !py-1.5 !text-sm" style="width:120px;">
+            <option value="">全部状态</option>
+            <option value="success">已完成</option>
+            <option value="failed">失败</option>
+            <option value="partial">部分完成</option>
+          </select>
+          <button @click="loadHistory(historyPage)" class="btn btn-ghost btn-sm" :disabled="historyLoading">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="historyLoading?'animate-spin':''"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            刷新
+          </button>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div x-show="!historyLoading && historyJobs.length===0 && activeJobs.length===0" class="py-16 text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="text-slate-500 text-sm">还没有任务</div>
+        <div class="text-slate-400 text-xs mt-1">在上方创建你的第一个生成任务</div>
+      </div>
+      <div x-show="!historyLoading && historyJobs.length===0 && activeJobs.length>0" class="py-12 text-center text-slate-400 text-sm">
+        暂无历史记录（符合当前筛选条件）
+      </div>
+
+      <!-- 列表 -->
+      <div x-show="historyJobs.length>0" class="divide-y divide-slate-100">
+        <template x-for="j in historyJobs" :key="j.id">
+          <div class="px-6 py-4">
+            <!-- 主行 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-medium truncate" x-text="j.company_name"></h3>
+                  <span class="badge-dot" :class="'badge-'+j.status" x-text="statusText(j.status)"></span>
+                  <span class="text-[11px] text-slate-400 font-mono" x-text="j.id.slice(0,8)"></span>
+                </div>
+                <div class="mt-1.5 flex items-center gap-x-3 gap-y-1 text-xs text-slate-500 flex-wrap">
+                  <span class="flex items-center gap-1">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span x-text="formatTime(j.created_at)"></span>
+                  </span>
+                  <span>·</span>
+                  <span x-text="'共 ' + j.quantity + ' 份'"></span>
+                  <span>·</span>
+                  <span x-text="j.template==='rich'?'丰富版':'基础版'"></span>
+                  <template x-if="j.language"><span>·</span></template>
+                  <span x-show="j.language" x-text="j.language"></span>
+                  <template x-if="j.finished_at"><span>·</span></template>
+                  <span x-show="j.finished_at" class="text-slate-400" x-text="elapsedTime(j)"></span>
+                </div>
+              </div>
+
+              <div class="w-36 hidden md:block">
+                <div class="progress-track">
+                  <div class="progress-bar" :class="progressClass(j)" :style="`width:${j.progress||0}%`"></div>
+                </div>
+                <div class="text-xs text-slate-400 mt-1" x-text="(j.progress||0) + '%'"></div>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button @click="toggleDetail(j.id)" class="btn btn-ghost btn-sm">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="expanded===j.id ? 'rotate-180' : ''" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                  详情
+                </button>
+                <button x-show="j.status==='success' || j.status==='partial'" @click="downloadAll(j.id)"
+                        :disabled="!!downloading['job:'+j.id]" class="btn btn-primary btn-sm">
+                  <template x-if="!downloading['job:'+j.id]">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </template>
+                  <template x-if="downloading['job:'+j.id]">
+                    <svg class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  </template>
+                  <span x-text="downloading['job:'+j.id] ? '下载中...' : '下载'"></span>
+                </button>
+                <button @click="confirmRetryJob(j)"
+                        x-show="j.status==='success' || j.status==='failed' || j.status==='partial'"
+                        :disabled="!!retryingJob[j.id]"
+                        class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="retryingJob[j.id] ? 'animate-spin' : ''"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                  <span x-text="retryingJob[j.id] ? '入队中...' : '重做'"></span>
+                </button>
+                <button @click="confirmDelete(j)" class="btn btn-sm text-red-600 hover:bg-red-50" style="border:1px solid #fecaca;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                  删除
+                </button>
+              </div>
+            </div>
+
+            <!-- 手机端进度条 -->
+            <div class="mt-3 md:hidden">
+              <div class="progress-track">
+                <div class="progress-bar" :class="progressClass(j)" :style="`width:${j.progress||0}%`"></div>
+              </div>
+              <div class="text-xs text-slate-500 mt-1" x-text="(j.progress||0)+'%'"></div>
+            </div>
+
+            <!-- 详情展开 -->
+            <div x-show="expanded===j.id" x-collapse class="mt-4 bg-slate-50 rounded-lg p-4 space-y-3">
+              <div x-show="j.error" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md p-2.5 flex items-start gap-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span x-text="j.error"></span>
+              </div>
+              <div x-show="detailLoading && expanded===j.id" class="flex items-center gap-2 text-xs text-slate-500 py-2">
+                <svg class="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <span>加载中...</span>
+              </div>
+              <div x-show="!(detailLoading && expanded===j.id) && (j.files||[]).length===0" class="text-xs text-slate-500">任务没有子文件记录</div>
+              <template x-for="f in (j.files||[])" :key="f.id">
+                <div class="bg-white rounded-lg p-3 ring-soft">
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm font-medium truncate" :title="f.software_name" x-text="f.software_name"></span>
+                        <span class="badge-dot" :class="'badge-'+f.status" x-text="fileStatusText(f.status)"></span>
+                      </div>
+                      <div class="mt-2 flex items-center gap-2">
+                        <div class="flex-1 progress-track" style="height:5px;">
+                          <div class="progress-bar" :class="progressClassFile(f)" :style="`width:${f.progress||0}%`"></div>
+                        </div>
+                        <span class="text-xs text-slate-500 w-9 text-right" x-text="(f.progress||0)+'%'"></span>
+                      </div>
+                      <div x-show="f.error" class="mt-1.5 text-xs text-red-600 truncate" :title="f.error" x-text="'✗ ' + f.error"></div>
+                    </div>
+                    <div class="flex gap-1.5">
+                      <button x-show="f.status==='done'" @click="downloadOne(j.id, f.id)"
+                              :disabled="!!downloading['file:'+f.id]" class="btn btn-ghost btn-sm">
+                        <template x-if="!downloading['file:'+f.id]">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </template>
+                        <template x-if="downloading['file:'+f.id]">
+                          <svg class="animate-spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        </template>
+                        <span x-text="downloading['file:'+f.id] ? '下载中...' : '下载'"></span>
+                      </button>
+                      <button x-show="f.status==='failed'" @click="retryOne(j.id, f.id)" class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                        继续
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- 分页 -->
+      <div x-show="historyTotal > historyPageSize" class="px-6 py-3 border-t border-slate-100 flex items-center justify-between text-sm">
+        <div class="text-slate-500 text-xs">
+          第 <span x-text="historyPage"></span> / <span x-text="Math.ceil(historyTotal/historyPageSize)"></span> 页 · 共 <span x-text="historyTotal"></span> 条
+        </div>
+        <div class="flex items-center gap-1">
+          <button @click="loadHistory(1)" :disabled="historyPage<=1" class="btn btn-ghost btn-sm" :class="historyPage<=1?'opacity-40 cursor-not-allowed':''">首页</button>
+          <button @click="loadHistory(historyPage-1)" :disabled="historyPage<=1" class="btn btn-ghost btn-sm" :class="historyPage<=1?'opacity-40 cursor-not-allowed':''">‹ 上一页</button>
+          <button @click="loadHistory(historyPage+1)" :disabled="historyPage>=Math.ceil(historyTotal/historyPageSize)" class="btn btn-ghost btn-sm" :class="historyPage>=Math.ceil(historyTotal/historyPageSize)?'opacity-40 cursor-not-allowed':''">下一页 ›</button>
+          <button @click="loadHistory(Math.ceil(historyTotal/historyPageSize))" :disabled="historyPage>=Math.ceil(historyTotal/historyPageSize)" class="btn btn-ghost btn-sm" :class="historyPage>=Math.ceil(historyTotal/historyPageSize)?'opacity-40 cursor-not-allowed':''">末页</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-400 py-6">
+      © 2026 软著申请自动生成系统 · 使用前请确认材料真实性
+    </footer>
+  </main>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div x-show="deleteTarget" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(15,23,42,0.5);" x-cloak>
+  <div class="card max-w-md w-full p-6" x-show="deleteTarget" x-transition>
+    <div class="flex items-start gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-slate-900">确认删除这个任务？</h3>
+        <p class="text-sm text-slate-600 mt-1">
+          即将删除：<span class="font-medium text-slate-900" x-text="deleteTarget?.company_name"></span>
+        </p>
+      </div>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900 mb-5">
+      <div class="font-medium mb-1">⚠️ 此操作将：</div>
+      <ul class="list-disc list-inside text-xs space-y-0.5 text-amber-800">
+        <li>从列表中隐藏此任务（软删除，数据库保留记录）</li>
+        <li>已生成的 zip 文件仍保留在服务器磁盘上</li>
+        <li>无法通过前端恢复，如需恢复请联系管理员</li>
+      </ul>
+      <template x-if="deleteTarget?.status === 'pending' || deleteTarget?.status === 'running'">
+        <div class="mt-2 pt-2 border-t border-amber-300 text-xs">
+          <span class="font-medium">注意：</span>该任务当前
+          <span x-show="deleteTarget?.status==='pending'">还在排队</span>
+          <span x-show="deleteTarget?.status==='running'">正在生成中</span>。
+          <span x-show="deleteTarget?.status==='pending'">删除后 worker 消费时会直接跳过，不浪费资源。</span>
+          <span x-show="deleteTarget?.status==='running'">删除后前端立即消失，但后台已在跑的这一份会继续跑到结束（产物你看不到）。</span>
+        </div>
+      </template>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button @click="deleteTarget=null" class="btn btn-ghost">取消</button>
+      <button @click="doDelete()" class="btn" style="background:#dc2626;color:#fff;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+        确认删除
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div x-show="toast.show" x-transition class="fixed top-4 right-4 z-50">
+  <div class="card px-4 py-3 flex items-center gap-2.5 ring-soft" :class="toast.type==='error'?'!bg-red-50 border-red-100':'!bg-emerald-50 border-emerald-100'">
+    <svg x-show="toast.type==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <svg x-show="toast.type==='error'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    <span class="text-sm" :class="toast.type==='error'?'text-red-700':'text-emerald-700'" x-text="toast.msg"></span>
+  </div>
+</div>
+
+<!-- Alpine Collapse 插件 -->
+<script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js" defer></script>
+
+<script>
+function app() {
+  return {
+    token: localStorage.getItem('token') || '',
+    username: localStorage.getItem('username') || '',
+    loginForm: { username: '', password: '' },
+    jobForm: { company_name: '', uscc: '', established_date: '', quantity: 1, keywords_raw: '', language: '', template: 'basic' },
+    loginError: '', jobError: '',
+    loggingIn: false, submitting: false, refreshing: false,
+    activeJobs: [], historyJobs: [],
+    historyQuery: '', historyStatus: '', historyPage: 1, historyPageSize: 20, historyTotal: 0, historyLoading: false,
+    expanded: '', detailLoading: false, pollTimer: null,
+    downloading: {},  // {[id]: true} 标记正在下载；模板用来禁用按钮 + 显示 loading
+    retryingJob: {},  // {[job_id]: true} 整 job 重做提交中
+    deleteTarget: null,
+    toast: { show: false, msg: '', type: 'success' },
+
+    // 兼容旧 queuePosition 逻辑：用 activeJobs 作为整体
+    get jobs() { return [...this.activeJobs, ...this.historyJobs]; },
+
+    init() {
+      if (this.token) {
+        this.loadActive();
+        this.loadHistory(1);
+        this.startPolling();
+      }
+    },
+
+    estimatedMinutes() {
+      const q = this.jobForm.quantity || 1;
+      const perSoft = this.jobForm.template === 'rich' ? 6 : 3;
+      return q * perSoft;
+    },
+
+    // 队列位置：在本任务之前的 running + 更早 pending 的数量 + 1
+    queuePosition(job) {
+      if (job.status !== 'pending') return 0;
+      let ahead = 0;
+      for (const other of this.activeJobs) {
+        if (other.id === job.id) continue;
+        if (other.status === 'running') ahead += 1;
+        else if (other.status === 'pending' && new Date(other.created_at) < new Date(job.created_at)) ahead += 1;
+      }
+      return ahead + 1;
+    },
+
+    statusText(s) {
+      return ({
+        pending: '等待中', running: '生成中', success: '已完成',
+        failed: '失败', partial: '部分完成',
+      })[s] || s;
+    },
+    fileStatusText(s) {
+      return ({
+        pending: '等待中', generating: '生成中', done: '已完成', failed: '失败',
+      })[s] || s;
+    },
+    progressClass(j) {
+      if (j.status==='failed') return 'failed';
+      if (j.status==='success') return 'success';
+      if (j.status==='running'||j.status==='pending') return 'shimmer';
+      return '';
+    },
+    progressClassFile(f) {
+      if (f.status==='failed') return 'failed';
+      if (f.status==='done') return 'success';
+      if (f.status==='generating') return 'shimmer';
+      return '';
+    },
+    formatTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = (now - d) / 1000;
+      if (diff < 60) return '刚刚';
+      if (diff < 3600) return Math.floor(diff/60) + ' 分钟前';
+      if (diff < 86400) return Math.floor(diff/3600) + ' 小时前';
+      return d.toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+    },
+    elapsedTime(start, end) {
+      // 兼容两种调用方式：传 Job 对象（优先用 started_at）或传 start/end 两个时间字符串
+      let startStr, endStr;
+      if (typeof start === 'object' && start !== null && 'created_at' in start) {
+        const job = start;
+        startStr = job.started_at || job.created_at;
+        endStr = job.finished_at;
+      } else {
+        startStr = start; endStr = end;
+      }
+      if (!startStr || !endStr) return '';
+      const s = Math.round((new Date(endStr) - new Date(startStr)) / 1000);
+      if (s < 0) return '';
+      if (s < 60) return '耗时 ' + s + ' 秒';
+      return '耗时 ' + Math.floor(s/60) + '分' + (s%60) + '秒';
+    },
+
+    showToast(msg, type='success') {
+      this.toast = { show: true, msg, type };
+      setTimeout(() => this.toast.show = false, 2800);
+    },
+
+    async login() {
+      this.loginError = ''; this.loggingIn = true;
+      try {
+        const r = await fetch('/auth/login', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(this.loginForm),
+        });
+        if (!r.ok) throw new Error((await r.json()).detail || '登录失败');
+        const data = await r.json();
+        this.token = data.access_token;
+        this.username = this.loginForm.username;
+        localStorage.setItem('token', this.token);
+        localStorage.setItem('username', this.username);
+        this.loadActive();
+        this.loadHistory(1);
+        this.startPolling();
+      } catch (e) { this.loginError = e.message; }
+      finally { this.loggingIn = false; }
+    },
+
+    logout() {
+      this.token = ''; this.username = '';
+      this.activeJobs = []; this.historyJobs = []; this.historyTotal = 0;
+      this.expanded = '';
+      localStorage.removeItem('token'); localStorage.removeItem('username');
+      if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+    },
+
+    startPolling() {
+      if (this.pollTimer) clearInterval(this.pollTimer);
+      this.pollTimer = setInterval(async () => {
+        if (!this.token) return;
+        const prevActive = this.activeJobs.length;
+        const calls = [];
+        if (this.activeJobs.length > 0) calls.push(this.loadActive());
+        if (this.expanded) calls.push(this.loadJobDetail(this.expanded));
+        await Promise.all(calls);
+        // 任务完成（active 数量变少）时，刷一下历史列表以反映新完成的记录
+        if (this.activeJobs.length < prevActive) {
+          this.loadHistory(this.historyPage);
+        }
+      }, 2000);
+    },
+
+    async submitJob() {
+      this.jobError = ''; this.submitting = true;
+      const keywords = this.jobForm.keywords_raw.split(/[,，\n]/).map(s=>s.trim()).filter(Boolean);
+      const body = {
+        company_name: this.jobForm.company_name,
+        uscc: this.jobForm.uscc,
+        established_date: this.jobForm.established_date,
+        quantity: this.jobForm.quantity,
+        keywords,
+        language: this.jobForm.language || null,
+        template: this.jobForm.template || 'basic',
+      };
+      try {
+        const r = await fetch('/jobs', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'Authorization':`Bearer ${this.token}`},
+          body: JSON.stringify(body),
+        });
+        if (!r.ok) throw new Error((await r.json()).detail || '提交失败');
+        this.jobForm.keywords_raw = '';
+        this.showToast('任务已创建，后台开始生成');
+        await this.loadActive();
+      } catch (e) { this.jobError = e.message; }
+      finally { this.submitting = false; }
+    },
+
+    // 进行中任务（pending+running）。总数少，不分页，实时轮询
+    async loadActive() {
+      this.refreshing = true;
+      try {
+        const r = await fetch('/jobs?group=active&page_size=200', {headers: {'Authorization':`Bearer ${this.token}`}});
+        if (r.status === 401) { this.logout(); return; }
+        if (!r.ok) return;
+        const data = await r.json();
+        this._mergeList(this.activeJobs, data.items || []);
+      } finally { this.refreshing = false; }
+    },
+
+    // 历史任务（success/failed/partial），分页+搜索
+    async loadHistory(page) {
+      this.historyLoading = true;
+      this.historyPage = Math.max(1, page);
+      try {
+        const params = new URLSearchParams({
+          group: this.historyStatus ? 'all' : 'history',
+          page: String(this.historyPage),
+          page_size: String(this.historyPageSize),
+        });
+        if (this.historyQuery.trim()) params.set('q', this.historyQuery.trim());
+        if (this.historyStatus) params.set('status', this.historyStatus);
+        const r = await fetch(`/jobs?${params}`, {headers: {'Authorization':`Bearer ${this.token}`}});
+        if (r.status === 401) { this.logout(); return; }
+        if (!r.ok) return;
+        const data = await r.json();
+        this._mergeList(this.historyJobs, data.items || []);
+        this.historyTotal = data.total || 0;
+      } finally { this.historyLoading = false; }
+    },
+
+    // 原地合并：保留已有 job/file 对象的引用身份，防止 Alpine 拆 DOM 重建导致动画重置/抖动
+    _mergeList(targetArray, list) {
+      const byId = new Map(targetArray.map(j => [j.id, j]));
+      const merged = [];
+      for (const incoming of list) {
+        const existing = byId.get(incoming.id);
+        if (existing) {
+          for (const k in incoming) existing[k] = incoming[k];
+          merged.push(existing);
+          byId.delete(incoming.id);
+        } else {
+          merged.push(incoming);
+        }
+      }
+      const sameOrder = merged.length === targetArray.length
+        && merged.every((j, i) => targetArray[i] && targetArray[i].id === j.id);
+      if (!sameOrder) targetArray.splice(0, targetArray.length, ...merged);
+    },
+
+    _mergeFilesInto(job, incomingFiles) {
+      const currentFiles = job.files || [];
+      const byId = new Map(currentFiles.map(f => [f.id, f]));
+      const merged = (incomingFiles || []).map(inc => {
+        const e = byId.get(inc.id);
+        if (e) { for (const k in inc) e[k] = inc[k]; return e; }
+        return inc;
+      });
+      const sameOrder = merged.length === currentFiles.length
+        && merged.every((f, i) => currentFiles[i] && currentFiles[i].id === f.id);
+      if (!sameOrder) job.files = merged;
+    },
+
+    async toggleDetail(id) {
+      if (this.expanded === id) { this.expanded = ''; return; }
+      this.expanded = id;
+      this.detailLoading = true;
+      try { await this.loadJobDetail(id); }
+      finally { this.detailLoading = false; }
+    },
+
+    async loadJobDetail(id) {
+      const r = await fetch(`/jobs/${id}`, {headers:{'Authorization':`Bearer ${this.token}`}});
+      if (!r.ok) return;
+      const detail = await r.json();
+      // 在 active 或 history 里找
+      const existing = this.activeJobs.find(j => j.id === id) || this.historyJobs.find(j => j.id === id);
+      if (!existing) return;
+      for (const k in detail) {
+        if (k === 'files') continue;
+        existing[k] = detail[k];
+      }
+      this._mergeFilesInto(existing, detail.files);
+    },
+
+    async downloadAll(id) {
+      const key = 'job:' + id;
+      if (this.downloading[key]) return;  // 防重复点击
+      this.downloading[key] = true;
+      try {
+        const r = await fetch(`/jobs/${id}/download`, {headers:{'Authorization':`Bearer ${this.token}`}});
+        if (!r.ok) { this.showToast('下载失败: ' + (await r.text()), 'error'); return; }
+        const blob = await r.blob();
+        const cd = r.headers.get('Content-Disposition') || '';
+        const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/);
+        const name = m ? decodeURIComponent(m[1]) : `job_${id}.zip`;
+        this._saveBlob(blob, name);
+      } finally {
+        delete this.downloading[key];
+      }
+    },
+
+    async downloadOne(jobId, fileId) {
+      const key = 'file:' + fileId;
+      if (this.downloading[key]) return;
+      this.downloading[key] = true;
+      try {
+        const r = await fetch(`/jobs/${jobId}/files/${fileId}/download`, {headers:{'Authorization':`Bearer ${this.token}`}});
+        if (!r.ok) { this.showToast('下载失败: ' + (await r.text()), 'error'); return; }
+        const blob = await r.blob();
+        const cd = r.headers.get('Content-Disposition') || '';
+        const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/);
+        const name = m ? decodeURIComponent(m[1]) : `software_${fileId}.zip`;
+        this._saveBlob(blob, name);
+      } finally {
+        delete this.downloading[key];
+      }
+    },
+
+    async confirmRetryJob(job) {
+      const eta = Math.max(15, (job.quantity || 1) * 15);
+      if (!confirm(`确认重做整个任务「${job.company_name}」？\n\n该任务下 ${job.quantity || 1} 份软著的已生成产物会被全部丢弃，从头重跑（约 ${eta} 分钟）。`)) return;
+      if (this.retryingJob[job.id]) return;
+      this.retryingJob[job.id] = true;
+      try {
+        const r = await fetch(`/jobs/${job.id}/retry`, {
+          method: 'POST',
+          headers: {'Authorization': `Bearer ${this.token}`},
+        });
+        if (!r.ok) {
+          this.showToast('重做失败: ' + (await r.text()).slice(0, 100), 'error');
+          return;
+        }
+        this.showToast('已加入队列，任务将重新生成');
+        // 该任务会从 history 迁到 active，两边都刷
+        await Promise.all([this.loadActive(), this.loadHistory(this.historyPage)]);
+      } catch (e) {
+        this.showToast('请求失败: ' + (e.message || e), 'error');
+      } finally {
+        delete this.retryingJob[job.id];
+      }
+    },
+
+    async retryOne(jobId, fileId) {
+      if (!confirm('确认重做这份软著？已生成的文件会被丢弃，从头重新生成。')) return;
+      const r = await fetch(`/jobs/${jobId}/files/${fileId}/retry`, {
+        method: 'POST',
+        headers: {'Authorization':`Bearer ${this.token}`},
+      });
+      if (!r.ok) { this.showToast('重试失败: ' + (await r.text()), 'error'); return; }
+      this.showToast('已加入队列，等待重做');
+      // 该任务会从 history 迁回 active，两边都刷一下
+      await Promise.all([this.loadActive(), this.loadHistory(this.historyPage), this.loadJobDetail(jobId)]);
+    },
+
+    confirmDelete(job) { this.deleteTarget = job; },
+
+    async doDelete() {
+      const job = this.deleteTarget;
+      if (!job) return;
+      const r = await fetch(`/jobs/${job.id}`, {
+        method: 'DELETE',
+        headers: {'Authorization':`Bearer ${this.token}`},
+      });
+      if (!r.ok) {
+        this.showToast('删除失败: ' + (await r.text()).slice(0,80), 'error');
+        this.deleteTarget = null;
+        return;
+      }
+      this.showToast('已删除');
+      this.deleteTarget = null;
+      if (this.expanded === job.id) this.expanded = '';
+      // active 和 history 两边都刷，active 的任务被删后要立即从"进行中"区消失
+      await Promise.all([this.loadActive(), this.loadHistory(this.historyPage)]);
+    },
+
+    _saveBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    },
+  };
+}
+</script>
+
+<style>[x-cloak] { display: none !important; }</style>
+</body>
+</html>

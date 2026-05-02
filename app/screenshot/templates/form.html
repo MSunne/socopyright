@@ -1,0 +1,97 @@
+{% extends "partials/_shell.html" %}
+{% block head_extra %}
+<style>
+.form-card {
+  background: var(--card-bg); border: var(--card-border); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 24px 30px;
+}
+.form-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: #111827; }
+.form-card .sub { color: #6b7280; font-size: 13px; margin-bottom: 22px; }
+.form-row { display: flex; gap: 24px; margin-bottom: 18px; }
+.form-field { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.form-field label { color: #374151; font-size: 12px; }
+.form-field label .req { color: #ef4444; margin-right: 4px; }
+.form-field input, .form-field select, .form-field textarea {
+  padding: 8px 10px; border: 1px solid #d1d5db; border-radius: var(--radius);
+  font-size: 13px; background: #fff; color: #1f2937; outline: none; font-family: inherit;
+}
+.form-field textarea { resize: vertical; min-height: 70px; }
+.form-field .hint { color: #9ca3af; font-size: 11px; }
+.form-section-title {
+  font-size: 13px; font-weight: 600; color: #374151; margin: 22px 0 12px 0;
+  border-left: 3px solid var(--color-accent); padding-left: 10px;
+}
+.form-actions {
+  margin-top: 28px; display: flex; gap: 10px; justify-content: flex-end;
+  border-top: 1px solid #e5e7eb; padding-top: 18px;
+}
+.chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 14px;
+  font-size: 12px; background: #fff; color: #4b5563; cursor: pointer;
+}
+.chip.active { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+.attachment-box {
+  border: 1px dashed #d1d5db; padding: 20px; border-radius: var(--radius);
+  text-align: center; color: #9ca3af; font-size: 12px; background: #fafbfc;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="form-card">
+  <h2>{{ form_title }}</h2>
+  <div class="sub">{{ form_subtitle }}</div>
+
+  <div class="form-section-title">基本信息</div>
+  <div class="form-row">
+    <div class="form-field">
+      <label><span class="req">*</span>{{ basic_1.label }}</label>
+      <input value="{{ basic_1.value }}"/>
+      <span class="hint">{{ basic_1.hint }}</span>
+    </div>
+    <div class="form-field">
+      <label><span class="req">*</span>{{ basic_2.label }}</label>
+      <input value="{{ basic_2.value }}"/>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-field">
+      <label>{{ basic_3.label }}</label>
+      <select>
+        {% for opt in basic_3.options %}<option {% if opt == basic_3.value %}selected{% endif %}>{{ opt }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-field">
+      <label>{{ basic_4.label }}</label>
+      <input type="date" value="{{ basic_4.value }}"/>
+    </div>
+  </div>
+
+  <div class="form-section-title">{{ section2_title }}</div>
+  <div class="form-row">
+    <div class="form-field" style="flex:3;">
+      <label>{{ tag_label }}</label>
+      <div class="chip-group">
+        {% for t in tags %}<span class="chip {% if t.active %}active{% endif %}">{{ t.name }}</span>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-field">
+      <label>{{ desc_label }}</label>
+      <textarea>{{ desc_value }}</textarea>
+    </div>
+  </div>
+
+  <div class="form-section-title">附件</div>
+  <div class="attachment-box">
+    📎 点击此处或将文件拖至此处上传（支持 PDF / 图片 / Excel，单文件不超过 20MB）
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-outline">取消</button>
+    <button class="btn btn-outline">保存草稿</button>
+    <button class="btn btn-add">提交</button>
+  </div>
+</div>
+{% endblock %}

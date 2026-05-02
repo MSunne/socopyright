@@ -1,0 +1,58 @@
+{% extends "partials/_shell.html" %}
+{% block content %}
+<div class="card">
+  <h2>{{ module_title }}</h2>
+  <div class="filters">
+    {% for f in filters %}
+    <input placeholder="{{ f }}"/>
+    {% endfor %}
+    <button class="btn-primary">查询</button>
+    <button class="btn-ghost">重置</button>
+  </div>
+  <div class="toolbar">
+    {% for op in operations %}
+    <button class="btn {% if loop.first %}btn-add{% else %}btn-outline{% endif %}">{{ op }}</button>
+    {% endfor %}
+  </div>
+  <div class="table-wrap">
+  <table class="data">
+    <thead><tr>
+      <th style="width:40px;"><input type="checkbox"/></th>
+      <th style="width:48px;">序号</th>
+      {% for c in columns %}<th>{{ c }}</th>{% endfor %}
+      <th style="width:130px;">操作</th>
+    </tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><input type="checkbox"/></td>
+        <td>{{ loop.index }}</td>
+        {% for v in r.cols %}
+        <td>
+          {% if v is mapping %}
+            <span class="badge {{ v.badge }}">{{ v.text }}</span>
+          {% else %}
+            {{ v }}
+          {% endif %}
+        </td>
+        {% endfor %}
+        <td>
+          <a href="#" style="color: var(--color-accent);">详情</a> ·
+          <a href="#" style="color:#6b7280;">编辑</a> ·
+          <a href="#" style="color:#ef4444;">删除</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="pagination">
+    <span>共 {{ total_count }} 条</span>
+    <button class="page">&lt;</button>
+    <button class="page active">1</button>
+    <button class="page">2</button>
+    <button class="page">3</button>
+    <button class="page">&gt;</button>
+  </div>
+</div>
+{% endblock %}

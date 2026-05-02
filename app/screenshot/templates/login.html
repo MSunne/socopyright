@@ -1,0 +1,104 @@
+{# 登录页独立全屏，不走 _shell.html，但仍响应设计令牌（radius / font / card_style）。 #}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>{{ software_name }} - 登录</title>
+<style>{{ base_css }}
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-dark) 0%, var(--color-accent) 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  display: flex; background: #fff; width: 860px; height: 480px;
+  border-radius: calc(var(--radius) + 4px);
+  overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+}
+.brand-panel {
+  width: 50%; padding: 46px 44px;
+  background: linear-gradient(140deg, var(--color-dark) 0%, var(--color-accent) 100%);
+  color: #fff; display: flex; flex-direction: column; justify-content: space-between;
+}
+.brand-panel h1 { font-size: 24px; font-weight: 600; line-height: 1.35; display: flex; align-items: center; }
+.brand-panel h1 .brand-mark { background: rgba(255,255,255,0.2); }
+.brand-panel h1 .brand-mark.brand-dot { background: #fff; }
+.brand-panel .slogan { margin-top: 10px; font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.7; }
+.brand-panel .feat-list { margin-top: 30px; }
+.brand-panel .feat { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; font-size: 13px; }
+.brand-panel .feat .check {
+  width: 16px; height: 16px; border-radius: 4px;
+  background: rgba(255,255,255,0.22); flex-shrink: 0; margin-top: 2px;
+  text-align: center; line-height: 16px; font-size: 11px;
+}
+.brand-panel .feat h4 { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+.brand-panel .feat p { color: rgba(255,255,255,0.72); font-size: 12px; }
+.brand-panel .copyright { font-size: 11px; color: rgba(255,255,255,0.55); }
+
+.form-panel { flex: 1; padding: 60px 54px; display: flex; flex-direction: column; justify-content: center; }
+.form-panel h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.form-panel .hint { color: #6b7280; font-size: 13px; margin-bottom: 28px; }
+.form-panel label { display: block; font-size: 12px; color: #4b5563; margin-bottom: 6px; margin-top: 16px; }
+.form-panel input {
+  width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+  border-radius: var(--radius); font-size: 14px; outline: none; font-family: inherit;
+}
+.form-panel input:focus { border-color: var(--color-accent); }
+.form-panel .options {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 14px; font-size: 12px; color: #6b7280;
+}
+.form-panel .options a { color: var(--color-accent); text-decoration: none; }
+.form-panel .btn-login {
+  width: 100%; margin-top: 20px; padding: 11px;
+  background: var(--color-accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-size: 14px; cursor: pointer; font-family: inherit;
+}
+.form-panel .other { margin-top: 18px; display: flex; gap: 12px; }
+.form-panel .other button {
+  flex: 1; padding: 8px; background: #fff; border: 1px solid #d1d5db;
+  border-radius: var(--radius); font-size: 12px; color: #4b5563; cursor: pointer; font-family: inherit;
+}
+</style>
+</head>
+<body class="{{ body_classes }}">
+<div class="login-box">
+  <div class="brand-panel">
+    <div>
+      <h1>{{ brand_mark_html|safe }}{{ software_name }}</h1>
+      <p class="slogan">{{ slogan }}</p>
+      <div class="feat-list">
+        {% for f in features %}
+        <div class="feat">
+          <span class="check">✓</span>
+          <div>
+            <h4>{{ f.title }}</h4>
+            <p>{{ f.desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="copyright">© {{ year }} {{ company_name }} 版权所有</div>
+  </div>
+  <div class="form-panel">
+    <h2>账户登录</h2>
+    <div class="hint">请输入您的账号密码，访问您的数据</div>
+    <label>用户名</label>
+    <input type="text" value="admin"/>
+    <label>密码</label>
+    <input type="password" value="••••••"/>
+    <div class="options">
+      <label style="margin:0;"><input type="checkbox" checked style="width:auto;margin-right:6px;"/>记住登录状态</label>
+      <a href="#">忘记密码？</a>
+    </div>
+    <button class="btn-login">登 录 账 户</button>
+    <div class="other">
+      <button>手机验证码</button>
+      <button>企业微信登录</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

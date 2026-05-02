@@ -1,0 +1,72 @@
+{% extends "partials/_shell.html" %}
+{% block head_extra %}
+<style>
+.detail-section {
+  background: var(--card-bg); border: var(--card-border); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); margin-bottom: 16px; padding: 18px 22px;
+}
+.detail-section h3 {
+  font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 12px;
+  border-left: 3px solid var(--color-accent); padding-left: 10px;
+}
+.kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; font-size: var(--font-size-sm); }
+.kv-item { display: flex; gap: 8px; padding: 4px 0; }
+.kv-item .k { color: #6b7280; min-width: 90px; flex-shrink: 0; }
+.kv-item .v { color: #1f2937; font-weight: 500; word-break: break-all; }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #e5e7eb; }
+.timeline li:last-child { border: 0; }
+.timeline .tl-time { color: #6b7280; font-size: 12px; width: 120px; flex-shrink: 0; }
+.timeline .tl-content { flex: 1; }
+.timeline .tl-user { color: var(--color-accent); font-weight: 600; }
+</style>
+{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+  <div>
+    <a href="#" style="color:#6b7280; font-size: 13px;">← 返回列表</a>
+    <h2 style="margin-top:6px; font-size:18px;">{{ record_title }}</h2>
+    <div style="margin-top:4px; font-size:12px; color:#9ca3af;">
+      编号 {{ record_code }} · <span class="badge {{ status_badge }}">{{ status_text }}</span>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button class="btn btn-outline">编辑</button>
+    <button class="btn btn-outline">打印</button>
+    <button class="btn btn-add">审批通过</button>
+  </div>
+</div>
+
+<div class="detail-section">
+  <h3>基本信息</h3>
+  <div class="kv-grid">
+    {% for kv in basic_fields %}
+    <div class="kv-item"><span class="k">{{ kv.k }}：</span><span class="v">{{ kv.v }}</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="detail-section">
+  <h3>业务明细</h3>
+  <div class="kv-grid">
+    {% for kv in business_fields %}
+    <div class="kv-item"><span class="k">{{ kv.k }}：</span><span class="v">{{ kv.v }}</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="detail-section">
+  <h3>处理记录</h3>
+  <ul class="timeline">
+    {% for t in timeline %}
+    <li>
+      <div class="tl-time">{{ t.time }}</div>
+      <div class="tl-content">
+        <span class="tl-user">{{ t.user }}</span> {{ t.action }}
+        {% if t.note %}<div style="color:#6b7280; font-size:12px; margin-top:3px;">{{ t.note }}</div>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

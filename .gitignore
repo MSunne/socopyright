@@ -1,0 +1,17 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+data/app.db
+data/app.db-*
+data/generated/
+tmp/
+.DS_Store
+.idea/
+.vscode/
+*.zip
+*.key
+*.pem
+*.crt
+*.csr
