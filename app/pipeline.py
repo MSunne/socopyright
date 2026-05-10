@@ -17,12 +17,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import shutil
 import time
 import zipfile
 from datetime import datetime
+from difflib import SequenceMatcher
 from pathlib import Path
 
+from pypdf import PdfReader, PdfWriter
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -33,6 +36,107 @@ from .renderers import application_form, features, source_code, user_manual
 from .spec import generate_specs
 
 logger = logging.getLogger(__name__)
+
+# 一般交存：前 30 页 + 后 30 页 = 60 页
+GENERAL_DEPOSIT_HEAD = 30
+GENERAL_DEPOSIT_TAIL = 30
+
+# 软件名相似度阈值（避免审核员一眼看出"批量水货"）
+NAME_DEDUP_RATIO = 0.75
+NAME_DEDUP_JACCARD = 0.75
+# 通用词剥离：判断"业务名词集合"重合度时把这些词去掉
+_GENERIC_WORDS = {
+    "系统", "平台", "软件", "工具", "管理", "应用",
+    "产品", "解决方案", "服务", "应用程序", "网站",
+}
+# 纯序号黑名单：以"1/2/3"或"一/二/三"等结尾视为序号化软件名
+_NUMERIC_TAIL_RE = re.compile(r".*\s*(\d+|[一二三四五六七八九十百]+)\s*$")
+
+
+def _name_tokens(name: str) -> set[str]:
+    """把软件名拆成 2-3 字业务词（粗粒度，不依赖外部分词库）。"""
+    # 去除括号、空格、版本号等标记，保留中文/英文/数字
+    name = re.sub(r"[\s（）()\[\]【】《》<>“”\"']+", "", name)
+    if not name:
+        return set()
+    tokens: set[str] = set()
+    # 2-gram：滑窗 2 字
+    for i in range(len(name) - 1):
+        t = name[i : i + 2]
+        if t not in _GENERIC_WORDS:
+            tokens.add(t)
+    # 同时保留通用词剥离后的整名片段（粗粒度业务感）
+    bare = name
+    for w in _GENERIC_WORDS:
+        bare = bare.replace(w, "")
+    if bare:
+        tokens.add(bare)
+    return tokens
+
+
+def _is_duplicate_name(a: str, b: str) -> bool:
+    """两个软件名是否会让审核员视作"同一软件水货"。"""
+    if not a or not b or a == b:
+        return a == b
+    # 1) Ratcliff-Obershelp ratio
+    if SequenceMatcher(None, a, b).ratio() >= NAME_DEDUP_RATIO:
+        return True
+    # 2) 业务名词集合 Jaccard
+    ta, tb = _name_tokens(a), _name_tokens(b)
+    if ta and tb:
+        inter = len(ta & tb)
+        union = len(ta | tb)
+        if union and inter / union >= NAME_DEDUP_JACCARD:
+            return True
+    return False
+
+
+def find_duplicate_indexes(names: list[str]) -> list[int]:
+    """返回需要重生的下标（保留首次出现，丢后面的）+ 命中纯序号黑名单的下标。"""
+    bad: set[int] = set()
+    for i, n in enumerate(names):
+        if _NUMERIC_TAIL_RE.match(n or ""):
+            bad.add(i)
+    for i in range(len(names)):
+        if i in bad:
+            continue
+        for j in range(i + 1, len(names)):
+            if j in bad:
+                continue
+            if _is_duplicate_name(names[i], names[j]):
+                bad.add(j)
+    return sorted(bad)
+
+
+def _clip_general_deposit(pdf_path: Path, full_dir: Path) -> int:
+    """把 pdf_path 改成"一般交存"格式：前 30 页 + 后 30 页 = 60 页。
+
+    完整 PDF 移到 full_dir 留档（不进 zip）。
+    返回截取后的页数（≤ 60）。若原 PDF ≤ 60 页则原地保留，不动。
+    """
+    if not pdf_path.exists():
+        return 0
+    reader = PdfReader(str(pdf_path))
+    total = len(reader.pages)
+    if total <= GENERAL_DEPOSIT_HEAD + GENERAL_DEPOSIT_TAIL:
+        return total
+
+    full_dir.mkdir(parents=True, exist_ok=True)
+    backup = full_dir / pdf_path.name
+    # 先备份完整版
+    pdf_path.replace(backup)
+
+    reader = PdfReader(str(backup))
+    writer = PdfWriter()
+    # 前 30 页
+    for i in range(GENERAL_DEPOSIT_HEAD):
+        writer.add_page(reader.pages[i])
+    # 后 30 页
+    for i in range(total - GENERAL_DEPOSIT_TAIL, total):
+        writer.add_page(reader.pages[i])
+    with open(pdf_path, "wb") as f:
+        writer.write(f)
+    return GENERAL_DEPOSIT_HEAD + GENERAL_DEPOSIT_TAIL
 
 # 每份软著 4 阶段权重（加起来 100）
 STAGE_WEIGHTS = {"source": 35, "manual": 45, "app_form": 10, "features": 10}
@@ -180,10 +284,19 @@ async def _gen_one_software(
         tracker.set(idx, "features", 1.0)
         await tracker.sync(force=True)
 
-        # 打 zip：{软件名}.zip 放在 job 目录里
+        # 5) 一般交存：把 源代码.pdf / 用户手册.pdf 截取为前 30 + 后 30 = 60 页
+        #    申请表 t3[7,2] 已固定写"60页/60页"，此处截取后 zip 内 PDF = 申请表声明 = 60 页
+        #    完整 PDF 仍保留在 _full/ 留档，不进 zip
+        full_dir = soft_dir / "_full"
+        await asyncio.to_thread(_clip_general_deposit, soft_dir / "源代码.pdf", full_dir)
+        await asyncio.to_thread(_clip_general_deposit, soft_dir / "用户手册.pdf", full_dir)
+
+        # 打 zip：{软件名}.zip 放在 job 目录里（排除 _full/ 留档目录）
         zip_path = output_dir / f"{name}.zip"
         with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             for p in sorted(soft_dir.iterdir()):
+                if p.is_dir():
+                    continue  # 跳过 _full/
                 zf.write(p, arcname=f"{name}/{p.name}")
 
         await _update_job_file(
@@ -233,6 +346,37 @@ async def run_job(job_id: str) -> None:
         )
         if len(specs) != job_snapshot["quantity"]:
             logger.warning("Spec 数量异常：请求 %d 生成 %d", job_snapshot["quantity"], len(specs))
+
+        # 1.5 软件名后置 dedup（O8）：审核员一眼看出"批量水货"必驳，要主动避免
+        for attempt in range(3):
+            names = [s.get("software_name", "") for s in specs]
+            bad_idx = find_duplicate_indexes(names)
+            if not bad_idx:
+                break
+            logger.warning(
+                "第 %d 轮检测到雷同/序号化软件名，索引=%s，名称=%s。重生中...",
+                attempt + 1, bad_idx, [names[i] for i in bad_idx],
+            )
+            # 局部重生：把这些 idx 的 spec 换掉。生成新主题时把现有名作为 already_used
+            used = [n for i, n in enumerate(names) if i not in bad_idx]
+            try:
+                new_specs = await generate_specs(
+                    company_name=job_snapshot["company_name"],
+                    uscc=job_snapshot["uscc"],
+                    established_date=job_snapshot["established_date"],
+                    quantity=len(bad_idx),
+                    keywords=used,  # 把已有名传进去当主题，避免再产出一样的
+                    language=job_snapshot["language"],
+                )
+            except Exception as e:
+                logger.warning("dedup 重生 specs 失败：%s", e)
+                break
+            for slot, ns in zip(bad_idx, new_specs):
+                # 保留原 _idx 编号
+                ns["_idx"] = specs[slot].get("_idx", slot)
+                specs[slot] = ns
+        else:
+            logger.warning("dedup 经 3 轮仍有雷同名，继续生产但记录 partial 风险")
 
         # 2. 为每份 spec 建 JobFile 记录
         async with AsyncSessionLocal() as s:

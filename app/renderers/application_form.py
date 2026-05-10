@@ -49,22 +49,30 @@ def render(spec: dict, *, output_path: str | Path, today: date | None = None) ->
     set_cell_text(t0.cell(1, 3), spec.get("software_abbr", ""))    # 软件简称
     set_cell_text(t0.cell(1, 10), spec.get("software_category", "应用软件"))  # 软件分类
 
-    # 软件作品说明（勾选框）
+    # 软件作品说明（勾选框）：spec 可配 is_original=True/False
+    is_original = bool(spec.get("is_original", True))
     set_cell_text(
         t0.cell(2, 3),
-        checkbox_line([("原创", True), ("修改（含翻译软件、合成软件）", False)]),
+        checkbox_line([("原创", is_original), ("修改（含翻译软件、合成软件）", not is_original)]),
     )
     # 开发完成日期
     set_cell_text(t0.cell(3, 3), _fmt_date_cn(spec["completion_date"]))
-    # 发表状态
+    # 发表状态：spec 可配 publish_status="已发表"/"未发表"
+    is_published = (spec.get("publish_status", "未发表") == "已发表")
     set_cell_text(
         t0.cell(4, 3),
-        checkbox_line([("已发表", False), ("未发表", True)]),
+        checkbox_line([("已发表", is_published), ("未发表", not is_published)]),
     )
-    # 开发方式
+    # 开发方式：spec 可配 dev_mode（单独开发/合作开发/委托开发/下达任务开发）
+    dev_mode = spec.get("dev_mode", "单独开发")
     set_cell_text(
         t0.cell(5, 3),
-        checkbox_line([("单独开发", True), ("合作开发", False), ("委托开发", False), ("下达任务开发", False)]),
+        checkbox_line([
+            ("单独开发", dev_mode == "单独开发"),
+            ("合作开发", dev_mode == "合作开发"),
+            ("委托开发", dev_mode == "委托开发"),
+            ("下达任务开发", dev_mode == "下达任务开发"),
+        ]),
     )
 
     # 著作权人行
@@ -115,11 +123,15 @@ def render(spec: dict, *, output_path: str | Path, today: date | None = None) ->
     # 源程序量（Phase 3 源代码生成后回填，此处先显示 spec 里的值）
     set_cell_text(t1.cell(6, 4), f"{spec.get('source_lines', 0)}行")
 
-    # 主要功能和技术特点（整段）
+    # 主要功能和技术特点（声明性视角：业务背景 + 行业 + 技术分类）
+    # N10：只取 main_description 的第 1 段（业务背景），避免与"功能特点.docx"
+    # 大段重复让审核员一眼看出复制粘贴感。
+    md_paragraphs = [p.strip() for p in (spec.get("main_description", "") or "").split("\n\n") if p.strip()]
+    md_first = md_paragraphs[0] if md_paragraphs else ""
     main_blob = (
         f"开发目的：{spec.get('purpose', '')}\n\n"
         f"面向领域／行业：{spec.get('industry', '')}\n\n"
-        f"主要功能：{spec.get('main_description', '')}\n\n"
+        f"业务背景：{md_first}\n\n"
         f"技术特点分类：{spec.get('tech_category', '')}\n"
         f"技术特点：{spec.get('tech_features', '')}"
     )
@@ -148,11 +160,12 @@ def render(spec: dict, *, output_path: str | Path, today: date | None = None) ->
         t3.cell(5, 1),
         f"著作权人 - {owner.get('name', '')} 的统一社会信用代码证书复印件                                       1页",
     )
-    # 软件鉴别材料页数（先占位，Phase 3 源码/Phase 4 手册生成完回填）
-    program_pages = spec.get("source_pdf_pages", 0)
-    doc_pages = spec.get("manual_pdf_pages", 0)
+    # 软件鉴别材料页数：申请表 t1[2,2]/t1[3,2] 已声明"一般交存（前30+后30）"，
+    # 此处填实际提交给版权中心的页数 = 60。pipeline 在打 zip 前会用
+    # _clip_general_deposit() 把源代码/手册 PDF 截取为前 30 + 后 30 页（O0）。
+    # 完整 PDF（仅做内部留档）保存在 _full/，不进 zip。
     set_cell_text(t3.cell(7, 1), "程序鉴别材料 - 一般交存\n文档鉴别材料 - 一般交存")
-    set_cell_text(t3.cell(7, 2), f"{program_pages}页\n{doc_pages}页")
+    set_cell_text(t3.cell(7, 2), "60页\n60页")
 
     # 签字日期（模板原有 "2026 年 04 月 13 日" 在正文段落里，不在表格里；保持原样）
     # 经办人签名 / 盖章 / 身份证号：均在正文段落，保持空白

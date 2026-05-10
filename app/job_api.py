@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from pathlib import Path
 from urllib.parse import quote
 
@@ -17,20 +18,35 @@ from .schemas import JobCreate, JobDetailOut, JobListResp, JobOut
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
+# 文件名里禁止出现的字符（Windows/macOS/Linux 共同非法集合 + 控制字符）
+_UNSAFE_FN_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
-def _attachment_headers(filename: str) -> dict[str, str]:
-    """生成同时含 ASCII fallback 和 UTF-8 编码的 Content-Disposition。
 
-    Starlette 自带的 FileResponse.filename 只会输出 filename*=UTF-8'' 单独一份，
-    微信内置浏览器 / 旧版 Safari / wget / curl 等看不懂 filename* 的客户端会拿到空白或乱码。
-    这里 ASCII fallback 用尽可能贴近的可识别名字，filename* 才是正解。
+def _safe_part(name: str, max_len: int = 60) -> str:
+    """清洗文件名片段：去掉文件系统非法字符 + 折叠空白 + 截断。"""
+    if not name:
+        return ""
+    s = _UNSAFE_FN_CHARS.sub("", str(name)).strip()
+    s = re.sub(r"\s+", " ", s)
+    return s[:max_len]
+
+
+def _attachment_headers(filename: str, *, ascii_fallback: str) -> dict[str, str]:
+    """生成 Content-Disposition：UTF-8 中文名 + 显式 ASCII fallback。
+
+    背景：浏览器（尤其是 Chrome）即使拿到 ``filename*=UTF-8''<encoded>``，
+    若同时存在 ``filename="<ascii>"``，下载文件名会优先取 ASCII 那个。
+    旧实现用 ``name.encode("ascii", "ignore")`` 把中文剥光后只剩括号/下划线，
+    最终用户看到 ``()_af172068.zip`` 这种乱码。
+
+    现在调用方必须**显式**传入一个安全的英文 fallback（如 ``softcopy_af172068.zip``），
+    不再依赖剥中文的危险逻辑。Modern 客户端会用 UTF-8 那份（拿到中文名），
+    旧客户端会拿到清晰的英文 fallback，两全其美。
     """
-    ascii_fallback = filename.encode("ascii", "ignore").decode("ascii").strip()
-    if not ascii_fallback or ascii_fallback in (".zip", ""):
-        ascii_fallback = "download.zip"
+    fb = ascii_fallback.strip() or "download.zip"
     encoded = quote(filename, safe="")
     return {
-        "Content-Disposition": f'attachment; filename="{ascii_fallback}"; filename*=UTF-8\'\'{encoded}',
+        "Content-Disposition": f'attachment; filename="{fb}"; filename*=UTF-8\'\'{encoded}',
     }
 
 
@@ -198,10 +214,25 @@ async def download_job_all(
     zip_path = Path(settings.DATA_DIR) / job_id / "all.zip"
     if not zip_path.exists():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "zip not generated")
+
+    # 命名：quantity=1 → "公司名_软件名_编号.zip"；
+    #       quantity>1 → "公司名_软著N份_编号.zip"
+    short_id = job_id[:8]
+    company = _safe_part(job.company_name, max_len=40)
+    if job.quantity == 1:
+        first_file = (await session.execute(
+            select(JobFile).where(JobFile.job_id == job_id).order_by(JobFile.idx).limit(1)
+        )).scalar_one_or_none()
+        soft = _safe_part(first_file.software_name if first_file else "软著", max_len=50)
+        nice_name = f"{company}_{soft}_{short_id}.zip"
+    else:
+        nice_name = f"{company}_软著{job.quantity}份_{short_id}.zip"
     return FileResponse(
         str(zip_path),
         media_type="application/zip",
-        headers=_attachment_headers(f"{job.company_name}_软著材料_{job_id[:8]}.zip"),
+        headers=_attachment_headers(
+            nice_name, ascii_fallback=f"softcopy_{short_id}.zip"
+        ),
     )
 
 
@@ -266,8 +297,16 @@ async def download_single_file(
         raise HTTPException(status.HTTP_409_CONFLICT, f"file status={jf.status}")
     if not Path(jf.zip_path).exists():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "zip missing")
+
+    # 单份命名：公司名_软件名_编号.zip（同一 Job 不同子文件靠 file_id 区分 ASCII fallback）
+    short_id = job_id[:8]
+    company = _safe_part(job.company_name, max_len=40)
+    soft = _safe_part(jf.software_name, max_len=50)
+    nice_name = f"{company}_{soft}_{short_id}.zip"
     return FileResponse(
         str(jf.zip_path),
         media_type="application/zip",
-        headers=_attachment_headers(f"{jf.software_name}.zip"),
+        headers=_attachment_headers(
+            nice_name, ascii_fallback=f"softcopy_{short_id}_{file_id}.zip"
+        ),
     )

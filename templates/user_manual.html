@@ -192,24 +192,24 @@ table, .screenshot { page-break-inside: avoid; }
 <p>本章按菜单顺序逐一介绍各功能模块的业务含义、界面结构和常用操作。</p>
 
 {% for m in modules %}
-<h3 class="module-title">6.{{ loop.index }} {{ m.title }}</h3>
+{% set mod_idx = loop.index %}
+<h3 class="module-title">6.{{ mod_idx }} {{ m.title }}</h3>
 
-<h4>6.{{ loop.index }}.1 模块概述</h4>
+<h4>6.{{ mod_idx }}.1 模块概述</h4>
 <p>{{ m.description }}</p>
 
-<h4>6.{{ loop.index }}.2 界面说明</h4>
-{% set mod_idx = loop.index %}
+<h4>6.{{ mod_idx }}.2 界面说明</h4>
 {% for shot in m.screenshots %}
 <img class="screenshot" src="{{ shot.img }}" alt="{{ shot.caption }}"/>
 <div class="screenshot-caption">图 6-{{ mod_idx }}.{{ loop.index }} {{ shot.caption }}</div>
 {% endfor %}
 
-<h4>6.{{ loop.index }}.3 典型操作流程</h4>
+<h4>6.{{ mod_idx }}.3 典型操作流程</h4>
 <ol class="steps">
 {% for step in m.steps %}<li>{{ step }}</li>{% endfor %}
 </ol>
 
-<h4>6.{{ loop.index }}.4 字段说明</h4>
+<h4>6.{{ mod_idx }}.4 字段说明</h4>
 <table>
   <thead><tr><th style="width:22%;">字段</th><th style="width:12%;">类型</th><th>含义</th></tr></thead>
   <tbody>
@@ -219,10 +219,65 @@ table, .screenshot { page-break-inside: avoid; }
   </tbody>
 </table>
 
-<h4>6.{{ loop.index }}.5 注意事项</h4>
+{% if m.business_rules %}
+<h4>6.{{ mod_idx }}.5 业务规则</h4>
+<ol>
+{% for rule in m.business_rules %}<li>{{ rule }}</li>{% endfor %}
+</ol>
+{% endif %}
+
+{% if m.state_flow and (m.state_flow.states or m.state_flow.transitions) %}
+<h4>6.{{ mod_idx }}.6 数据流转</h4>
+{% if m.state_flow.states %}
+<p>本模块涉及的核心业务状态如下：</p>
+<table>
+  <thead><tr><th style="width:18%;">状态</th><th style="width:18%;">编码</th><th>说明</th></tr></thead>
+  <tbody>
+  {% for s in m.state_flow.states %}
+  <tr><td>{{ s.name }}</td><td><code>{{ s.code }}</code></td><td>{{ s.desc }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% if m.state_flow.transitions %}
+<p>状态迁移规则：</p>
+<ul>
+{% for t in m.state_flow.transitions %}<li>{{ t }}</li>{% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+
+{% if m.errors %}
+<h4>6.{{ mod_idx }}.7 异常与告警</h4>
+<table>
+  <thead><tr><th style="width:18%;">错误码</th><th style="width:36%;">触发场景</th><th>处置建议</th></tr></thead>
+  <tbody>
+  {% for err in m.errors %}
+  <tr><td><code>{{ err.code }}</code></td><td>{{ err.scene }}</td><td>{{ err.fix }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h4>6.{{ mod_idx }}.8 注意事项</h4>
 <ul>
 {% for n in m.notes %}<li>{{ n }}</li>{% endfor %}
 </ul>
+
+{% if m.scenarios %}
+<h4>6.{{ mod_idx }}.9 典型业务场景</h4>
+{% for sc in m.scenarios %}
+<p><b>场景 {{ loop.index }}：{{ sc.title }}</b></p>
+<p>{{ sc.narrative }}</p>
+{% endfor %}
+{% endif %}
+
+{% if m.extra_rules %}
+<h4>6.{{ mod_idx }}.10 补充业务规则</h4>
+<ol>
+{% for r in m.extra_rules %}<li>{{ r }}</li>{% endfor %}
+</ol>
+{% endif %}
 {% endfor %}
 
 <!-- ========== 7. FAQ ========== -->

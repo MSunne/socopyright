@@ -725,3 +725,19 @@ body.shell-window-chrome .wc-user .avatar {
   display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px;
 }
 body.shell-window-chrome .content { flex: 1; padding: 20px; overflow: auto; }
+
+/* ——— O12 全局版权水印（所有 shell 共用）—————————————————————————
+ * 软著合规要求："截图必须能看到版权方"。这条水印固定在视口右下角，
+ * 由 _shell.html 通过 spec["owner"]["name"] 注入，不会串号。
+ */
+.global-water {
+  position: fixed;
+  right: 14px;
+  bottom: 6px;
+  font-size: 10px;
+  color: rgba(120, 130, 140, 0.7);
+  font-family: var(--font-family);
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  z-index: 999;
+}

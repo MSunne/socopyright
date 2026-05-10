@@ -354,6 +354,11 @@
 
 {% endif %}
 
+{# ——— O12 全局版权水印：审核员可在任意一张截图右下角看到当前公司名，不会串号 ——— #}
+{% if company_name %}
+<div class="global-water">© {{ year }} {{ company_name }}</div>
+{% endif %}
+
 {% block body_scripts %}{% endblock %}
 </body>
 </html>

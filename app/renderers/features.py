@@ -38,10 +38,11 @@ def render(spec: dict, *, output_path: str | Path) -> Path:
     set_cell_text(t0.cell(1, 3), spec.get("version", "V1.0"))
     set_cell_text(t0.cell(2, 1), spec.get("software_abbr", ""))
     set_cell_text(t0.cell(2, 3), spec.get("software_category", "应用软件"))
-    set_cell_text(t0.cell(3, 1), "原创")
-    set_cell_text(t0.cell(3, 3), "单独开发")
+    # O7: 勾选项联动 spec（原创 / 开发方式 / 发表状态）
+    set_cell_text(t0.cell(3, 1), "原创" if spec.get("is_original", True) else "修改")
+    set_cell_text(t0.cell(3, 3), spec.get("dev_mode", "单独开发"))
     set_cell_text(t0.cell(4, 1), _fmt_date_cn(spec["completion_date"]))
-    set_cell_text(t0.cell(4, 3), "未发表")
+    set_cell_text(t0.cell(4, 3), spec.get("publish_status", "未发表"))
     set_cell_text(t0.cell(5, 1), _hw_line(spec["hardware_dev"]))
     set_cell_text(t0.cell(6, 1), _hw_line(spec["hardware_run"]))
     set_cell_text(t0.cell(7, 1), spec.get("dev_os", ""))
@@ -53,19 +54,28 @@ def render(spec: dict, *, output_path: str | Path) -> Path:
     set_cell_text(t0.cell(13, 1), spec.get("purpose", ""))
     set_cell_text(t0.cell(14, 1), spec.get("industry", ""))
 
-    # 主要功能：拼合"整段描述 + 10 个模块的清单"
+    # 主要功能：实施性视角——技术方法（main_description 第 2 段）+ 价值（第 3 段）+ 模块清单
+    # N10：避免与申请表 t1[7,2] 重复，两份文档各取 main_description 不同段落
+    md_paragraphs = [p.strip() for p in (spec.get("main_description", "") or "").split("\n\n") if p.strip()]
+    md_method = md_paragraphs[1] if len(md_paragraphs) >= 2 else (md_paragraphs[0] if md_paragraphs else "")
+    md_value = md_paragraphs[2] if len(md_paragraphs) >= 3 else ""
     func_lines = "\n".join(f"{i+1}. {f['name']}：{f['desc']}" for i, f in enumerate(spec.get("functions", [])))
-    main_text = spec.get("main_description", "") + "\n\n主要功能模块：\n" + func_lines
+    main_text = (
+        f"核心方法：{md_method}\n\n"
+        + (f"实际效果：{md_value}\n\n" if md_value else "")
+        + "主要功能模块：\n" + func_lines
+    )
     set_cell_text(t0.cell(15, 1), main_text)
 
     set_cell_text(t0.cell(16, 1), spec.get("tech_category", ""))
     set_cell_text(t0.cell(17, 1), spec.get("tech_features", ""))
 
     # ==== Table 1: 著作权人 ====
+    # O9: type/cert_type 联动 USCC 第 1 位（spec.generate_specs 已经填好 owner.type 和 cert_type）
     t1 = doc.tables[1]
     set_cell_text(t1.cell(0, 1), owner.get("name", ""))
-    set_cell_text(t1.cell(1, 1), "企业法人")
-    set_cell_text(t1.cell(2, 1), "统一社会信用代码证书")
+    set_cell_text(t1.cell(1, 1), owner.get("type", "企业法人"))
+    set_cell_text(t1.cell(2, 1), owner.get("cert_type", "统一社会信用代码证书"))
     set_cell_text(t1.cell(3, 1), owner.get("uscc", ""))
     set_cell_text(t1.cell(4, 1), f"{owner.get('province', '')} {owner.get('city', '')}".strip())
 

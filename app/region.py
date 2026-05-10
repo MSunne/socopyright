@@ -1,4 +1,4 @@
-"""统一社会信用代码 → 省份/城市 解析。
+"""统一社会信用代码 → 省份/城市 解析 + GB 32100 校验位校验。
 
 USCC 结构（18 位）：
   [0]     登记管理部门代码
@@ -8,8 +8,11 @@ USCC 结构（18 位）：
   [17]    校验码
 
 本模块只需要 [2:8] 这 6 位，前 2 位是省级，前 4 位是地级市。
+GB 32100-2015 校验位算法见 validate_uscc。
 """
 from __future__ import annotations
+
+import re
 
 # 省级代码 → 省/直辖市简称（用于"省份/城市"字段）
 PROVINCES: dict[str, str] = {
@@ -137,3 +140,36 @@ def parse_uscc(uscc: str) -> dict[str, str]:
     province = PROVINCES.get(code[:2], "")
     city = CITIES.get(code[:4], "")
     return {"province": province, "city": city, "region_code": code}
+
+
+# ---------------------------------------------------------------------------
+# GB 32100-2015 统一社会信用代码校验
+# ---------------------------------------------------------------------------
+
+# 字符集：去掉容易混淆的 I O S V Z，共 31 个字符
+USCC_CHARSET = "0123456789ABCDEFGHJKLMNPQRTUWXY"
+USCC_WEIGHTS = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28]
+# 整体形态校验：[0:2] 登记管理部门+机构类别（含字母），[2:8] 行政区划数字，[8:18] 主体标识码（含字母）
+USCC_RE = re.compile(r"^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$")
+
+
+def validate_uscc(code: str) -> tuple[bool, str]:
+    """校验统一社会信用代码（GB 32100-2015）。
+
+    返回 (是否合法, 错误原因)。合法时 reason 为空字符串。
+    """
+    if not isinstance(code, str):
+        return False, "必须是字符串"
+    code = code.strip().upper()
+    if len(code) != 18:
+        return False, "长度必须为 18 位"
+    if not USCC_RE.match(code):
+        return False, "格式不合法（含非法字符或行政区划位非数字）"
+    try:
+        s = sum(USCC_CHARSET.index(c) * w for c, w in zip(code[:17], USCC_WEIGHTS))
+    except ValueError:
+        return False, "包含非法字符（不允许 I O S V Z）"
+    expected = USCC_CHARSET[(31 - s % 31) % 31]
+    if code[17] != expected:
+        return False, f"第 18 位校验码错误，应为 {expected}"
+    return True, ""
