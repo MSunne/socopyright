@@ -1,12 +1,12 @@
-{# APP 原生（iOS 风格）骨架。
-  context:
-    software_name, module_title, page_title,
-    op_user, avatar_char,
-    mobile_css (注入的 _mobile.css 内容),
-    body_classes (e.g. "mobile-app radius-12 font-pingfang"),
-    mobile_tabs (list of {name, icon, active}),
-    company_name, year,
-    is_login: True → 不渲染 statusbar/nav/tabbar，全屏内容
+{# APP 原生骨架 — 15 套 shell 变体，由 {{ app_shell }} 控制结构差异。
+
+  策略：所有 shell 共用同一个 {% block content %}（在模板末尾静态定义一次），
+        然后用 `_block_inner()` macro / 或简单地把 content_str 预先 render 到变量传入也可。
+
+        Jinja 不支持「在 if 分支内重新定义同名 block」——
+        所以这里采取「shell 决定 wrapper 结构 + 唯一 content block」的方案。
+
+  context: 见 _mobile_context()
 #}
 <!doctype html>
 <html lang="zh-CN">
@@ -16,40 +16,190 @@
 <style>{{ mobile_css }}</style>
 {% block head_extra %}{% endblock %}
 </head>
-<body class="mobile-app {{ body_classes }}">
+<body class="{{ body_classes }}">
 
-{% if not is_login %}
-{# 标准 APP 布局头部 #}
-<div class="ios-statusbar">
-  <span>9:41</span>
-  <span class="ios-status-icons">●●●● <span style="margin-left:4px;">5G</span> <span style="margin-left:6px;">100%</span></span>
-</div>
-<div class="app-nav">
-  <span class="app-nav-back">{% if show_back %}‹{% endif %}</span>
-  <span class="app-nav-title">{{ page_title or module_title or software_name }}</span>
-  <span class="app-nav-right">⋯</span>
-</div>
-<main class="app-main">
-{% endif %}
+{% if is_login %}
+  {# 登录页：全屏 #}
+  {{ self.content() }}
 
-{% block content %}{% endblock %}
+{% else %}
+  {# ===== 状态栏 ===== #}
+  {% if app_shell == "dark-pro" %}
+    <div class="ios-statusbar ios-statusbar-dark">
+      <span>9:41</span><span class="ios-status-icons">●●●● 5G 100%</span>
+    </div>
+  {% else %}
+    <div class="ios-statusbar">
+      <span>9:41</span><span class="ios-status-icons">●●●● 5G 100%</span>
+    </div>
+  {% endif %}
 
-{% if not is_login %}
-</main>
-{% if mobile_tabs %}
-<nav class="app-tabbar">
-  {% for tab in mobile_tabs %}
-  <div class="tab-item {% if tab.active %}active{% endif %}">
-    <div class="tab-icon">{{ tab.icon or '●' }}</div>
-    <div class="tab-label">{{ tab.name }}</div>
-  </div>
-  {% endfor %}
-</nav>
-{% endif %}
-{% endif %}
+  {# ===== rail-left：左侧 rail + 右侧整个布局 ===== #}
+  {% if app_shell == "rail-left" %}
+    <aside class="app-rail-vertical">
+      {% for tab in mobile_tabs[:5] %}
+      <div class="rail-item {% if tab.active %}active{% endif %}">
+        <div class="rail-icon">{{ tab.icon or '●' }}</div>
+        <div class="rail-label">{{ tab.name[:2] }}</div>
+      </div>
+      {% endfor %}
+    </aside>
+    <div class="app-rail-body">
+      <div class="app-nav">
+        <span class="app-nav-back">{% if show_back %}‹{% endif %}</span>
+        <span class="app-nav-title">{{ page_title or module_title or software_name }}</span>
+        <span class="app-nav-right">⋯</span>
+      </div>
+      <main class="app-main app-main-rail">
+        {{ self.content() }}
+      </main>
+    </div>
+
+  {% else %}
+    {# ===== 顶栏（普通分支） ===== #}
+    {% if app_shell == "drawer-left" %}
+      <div class="app-nav app-nav-drawer">
+        <span class="hamburger">☰</span>
+        <span class="app-nav-title">{{ page_title or module_title or software_name }}</span>
+        <span class="app-nav-right">🔍</span>
+      </div>
+    {% elif app_shell == "drawer-right" %}
+      <div class="app-nav">
+        <span class="app-nav-back">{% if show_back %}‹{% endif %}</span>
+        <span class="app-nav-title">{{ page_title or module_title or software_name }}</span>
+        <span class="hamburger">☰</span>
+      </div>
+    {% elif app_shell == "top-tabs" %}
+      <div class="app-nav app-nav-toptab">
+        <span class="app-nav-title">{{ software_name }}</span>
+        <span class="app-nav-right">⋯</span>
+      </div>
+    {% elif app_shell == "card-stack" %}
+      <div class="app-nav app-nav-stack">
+        <span class="app-nav-title">{{ software_name }}</span>
+        <span class="app-nav-right">🔔</span>
+      </div>
+    {% elif app_shell == "pull-tab" %}
+      {# 不渲染独立顶栏 #}
+    {% else %}
+      <div class="app-nav">
+        <span class="app-nav-back">{% if show_back %}‹{% endif %}</span>
+        <span class="app-nav-title">{{ page_title or module_title or software_name }}</span>
+        <span class="app-nav-right">⋯</span>
+      </div>
+    {% endif %}
+
+    {# ===== 抽屉 ===== #}
+    {% if app_shell == "drawer-left" %}
+      <aside class="drawer drawer-left-open">
+        <div class="drawer-user">
+          <div class="drawer-avatar">{{ avatar_char }}</div>
+          <div class="drawer-name">{{ op_user }}</div>
+          <div class="drawer-role">{{ company_name }}</div>
+        </div>
+        <nav class="drawer-menu">
+          {% for tab in mobile_tabs %}
+          <div class="drawer-item {% if tab.active %}active{% endif %}">
+            <span class="drawer-icon">{{ tab.icon or '●' }}</span><span>{{ tab.name }}</span>
+          </div>
+          {% endfor %}
+        </nav>
+      </aside>
+    {% elif app_shell == "drawer-right" %}
+      <aside class="drawer drawer-right-open">
+        <div class="drawer-user">
+          <div class="drawer-avatar">{{ avatar_char }}</div>
+          <div class="drawer-name">{{ op_user }}</div>
+        </div>
+        <nav class="drawer-menu">
+          {% for tab in mobile_tabs %}
+          <div class="drawer-item {% if tab.active %}active{% endif %}">
+            <span class="drawer-icon">{{ tab.icon or '●' }}</span><span>{{ tab.name }}</span>
+          </div>
+          {% endfor %}
+        </nav>
+      </aside>
+    {% endif %}
+
+    {# ===== 顶部 tabs ===== #}
+    {% if app_shell == "top-tabs" %}
+      <nav class="app-toptabs">
+        {% for tab in mobile_tabs[:5] %}
+        <div class="toptab-item {% if tab.active %}active{% endif %}">{{ tab.name }}</div>
+        {% endfor %}
+      </nav>
+    {% elif app_shell == "segment-control" %}
+      <nav class="app-segment">
+        {% for tab in mobile_tabs[:3] %}
+        <div class="segment-item {% if tab.active %}active{% endif %}">{{ tab.name }}</div>
+        {% endfor %}
+      </nav>
+    {% endif %}
+
+    {# ===== 主区 ===== #}
+    {% set main_class = {
+      'drawer-left': 'app-main app-main-drawer-left',
+      'drawer-right': 'app-main app-main-drawer-right',
+      'top-tabs': 'app-main app-main-toptab',
+      'segment-control': 'app-main app-main-segment',
+      'bubble-fab-center': 'app-main app-main-bubble',
+      'card-stack': 'app-main app-main-stack',
+      'pull-tab': 'app-main app-main-pulltab',
+      'floating-min': 'app-main app-main-floatmin',
+    }.get(app_shell, 'app-main') %}
+    <main class="{{ main_class }}">
+      {% if app_shell == "pull-tab" %}
+        <div class="pulltab-handle"></div>
+        <div class="pulltab-title">{{ page_title or module_title or software_name }}</div>
+      {% endif %}
+      {{ self.content() }}
+    </main>
+
+    {# ===== 底部 tabbar ===== #}
+    {% if app_shell in ("top-tabs", "drawer-left", "drawer-right", "pull-tab") %}
+      {# 这些 shell 无底 tabbar #}
+    {% elif app_shell == "bubble-fab-center" and mobile_tabs %}
+      <nav class="app-tabbar app-tabbar-bubble">
+        {% set mid = (mobile_tabs|length // 2) + 1 %}
+        {% for tab in mobile_tabs %}
+          {% if loop.index == mid %}
+            <div class="tab-bubble">
+              <div class="tab-bubble-icon">{{ tab.icon or '+' }}</div>
+              <div class="tab-bubble-label">{{ tab.name }}</div>
+            </div>
+          {% else %}
+            <div class="tab-item {% if tab.active %}active{% endif %}">
+              <div class="tab-icon">{{ tab.icon or '●' }}</div>
+              <div class="tab-label">{{ tab.name }}</div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    {% elif mobile_tabs %}
+      <nav class="app-tabbar">
+        {% for tab in mobile_tabs %}
+        <div class="tab-item {% if tab.active %}active{% endif %}">
+          <div class="tab-icon">{{ tab.icon or '●' }}</div>
+          <div class="tab-label">{{ tab.name }}</div>
+        </div>
+        {% endfor %}
+      </nav>
+    {% endif %}
+
+    {# ===== 悬浮按钮 ===== #}
+    {% if app_shell == "floating-min" %}
+      <div class="floating-fab">+</div>
+    {% endif %}
+  {% endif %}{# end rail-left vs others #}
+{% endif %}{# end is_login #}
 
 {# 全局水印 #}
 <div class="global-water">© {{ year }} {{ company_name }}</div>
 
 </body>
 </html>
+
+{# 定义 content block 一次（子模板可重写）—— 放在 </html> 之后不会渲染到 DOM；
+   self.content() 在上面分支里调用时会输出子模板重写的内容。 #}
+{% block content %}{% endblock %}
+

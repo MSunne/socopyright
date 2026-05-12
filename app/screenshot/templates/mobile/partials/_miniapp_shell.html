@@ -1,4 +1,9 @@
-{# 微信小程序骨架。特色：顶部胶囊、底 4 tabbar、微信主题 #07c160 #}
+{# 微信小程序骨架。5 套 shell 由 {{ miniapp_shell }} 控制结构差异。
+   小程序受微信限制：胶囊必须右上、底 tabbar 4 个固定。
+   可变维度：配色（accent）、卡片样式、顶部样式（沉浸式/纯白/品牌色 banner）、整体密度。
+
+   context: 见 _mobile_context()
+#}
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -7,38 +12,92 @@
 <style>{{ mobile_css }}</style>
 {% block head_extra %}{% endblock %}
 </head>
-<body class="mobile-miniapp {{ body_classes }}">
+<body class="{{ body_classes }}">
 
-{% if not is_login %}
-<div class="wx-statusbar">
-  <span>9:41</span>
-  <div class="wx-capsule">
-    <span>⊝</span><span class="sep"></span><span>⋯</span>
-  </div>
-</div>
-{% if ma_title or page_title %}
-<div class="ma-header">{{ ma_title or page_title or module_title or software_name }}</div>
-{% endif %}
-<main class="ma-main">
-{% endif %}
+{% if is_login %}
+  {{ self.content() }}
 
-{% block content %}{% endblock %}
+{% else %}
+  {# ===== 状态栏 / 胶囊（微信限制：胶囊永远右上） ===== #}
+  {% if miniapp_shell == "vivid-brand" %}
+    {# 品牌强色顶部 banner（沉浸式状态栏配色） #}
+    <div class="wx-statusbar wx-statusbar-vivid">
+      <span>9:41</span>
+      <div class="wx-capsule wx-capsule-on-color"><span>⊝</span><span class="sep"></span><span>⋯</span></div>
+    </div>
+    <div class="ma-header ma-header-vivid">
+      <div class="ma-header-banner">
+        <div class="ma-banner-title">{{ page_title or module_title or software_name }}</div>
+        <div class="ma-banner-sub">{{ slogan }}</div>
+      </div>
+    </div>
+  {% elif miniapp_shell == "monochrome" %}
+    <div class="wx-statusbar wx-statusbar-mono">
+      <span>9:41</span>
+      <div class="wx-capsule wx-capsule-mono"><span>⊝</span><span class="sep"></span><span>⋯</span></div>
+    </div>
+    <div class="ma-header ma-header-mono">{{ page_title or module_title or software_name }}</div>
+  {% elif miniapp_shell == "warm-card" %}
+    <div class="wx-statusbar wx-statusbar-warm">
+      <span>9:41</span>
+      <div class="wx-capsule wx-capsule-warm"><span>⊝</span><span class="sep"></span><span>⋯</span></div>
+    </div>
+    {% if ma_title or page_title or module_title %}
+    <div class="ma-header ma-header-warm">{{ ma_title or page_title or module_title or software_name }}</div>
+    {% endif %}
+  {% elif miniapp_shell == "cool-flat" %}
+    <div class="wx-statusbar wx-statusbar-cool">
+      <span>9:41</span>
+      <div class="wx-capsule wx-capsule-cool"><span>⊝</span><span class="sep"></span><span>⋯</span></div>
+    </div>
+    {% if ma_title or page_title or module_title %}
+    <div class="ma-header ma-header-cool">{{ ma_title or page_title or module_title or software_name }}</div>
+    {% endif %}
+  {% else %}
+    {# 默认 wx-classic #}
+    <div class="wx-statusbar">
+      <span>9:41</span>
+      <div class="wx-capsule"><span>⊝</span><span class="sep"></span><span>⋯</span></div>
+    </div>
+    {% if ma_title or page_title or module_title %}
+    <div class="ma-header">{{ ma_title or page_title or module_title or software_name }}</div>
+    {% endif %}
+  {% endif %}
 
-{% if not is_login %}
-</main>
-{% if mobile_tabs %}
-<nav class="ma-tabbar">
-  {% for tab in mobile_tabs %}
-  <div class="tab-item {% if tab.active %}active{% endif %}">
-    <div class="tab-icon">{{ tab.icon or '●' }}</div>
-    <div class="tab-label">{{ tab.name }}</div>
-  </div>
-  {% endfor %}
-</nav>
-{% endif %}
+  {# ===== 主区 ===== #}
+  {% set ma_main_class = {
+    'vivid-brand': 'ma-main ma-main-vivid',
+    'monochrome': 'ma-main ma-main-mono',
+    'warm-card': 'ma-main ma-main-warm',
+    'cool-flat': 'ma-main ma-main-cool',
+  }.get(miniapp_shell, 'ma-main') %}
+  <main class="{{ ma_main_class }}">
+    {{ self.content() }}
+  </main>
+
+  {# ===== tabbar（小程序固定 4 个） ===== #}
+  {% if mobile_tabs %}
+    {% set ma_tabbar_class = {
+      'vivid-brand': 'ma-tabbar ma-tabbar-vivid',
+      'monochrome': 'ma-tabbar ma-tabbar-mono',
+      'warm-card': 'ma-tabbar ma-tabbar-warm',
+      'cool-flat': 'ma-tabbar ma-tabbar-cool',
+    }.get(miniapp_shell, 'ma-tabbar') %}
+    <nav class="{{ ma_tabbar_class }}">
+      {% for tab in mobile_tabs[:4] %}
+      <div class="tab-item {% if tab.active %}active{% endif %}">
+        <div class="tab-icon">{{ tab.icon or '●' }}</div>
+        <div class="tab-label">{{ tab.name }}</div>
+      </div>
+      {% endfor %}
+    </nav>
+  {% endif %}
 {% endif %}
 
 <div class="global-water">© {{ year }} {{ company_name }} · 小程序</div>
 
 </body>
 </html>
+
+{# content block 定义（子模板重写） #}
+{% block content %}{% endblock %}

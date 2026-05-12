@@ -241,3 +241,373 @@ html, body {
 .m-goods-sub { font-size: var(--m-font-sm); color: var(--m-text-muted); margin-bottom: auto; }
 .m-goods-price { font-size: 16px; color: #dc2626; font-weight: 600; }
 .m-goods-price-unit { font-size: 11px; color: var(--m-text-muted); }
+
+/* =================================================================
+ * M5: 15 套 APP shell + 5 套 miniapp shell 样式覆盖
+ * 每套通过 body.app-shell-xxx / body.miniapp-shell-xxx 选择器响应
+ * =================================================================
+ */
+
+/* ========== APP shell #1: ios-bottom（iOS 经典） ========== */
+body.app-shell-ios-bottom {
+  --m-radius-card: 14px;
+}
+body.app-shell-ios-bottom .m-card { box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+body.app-shell-ios-bottom .app-nav { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); }
+
+/* ========== APP shell #2: android-material ========== */
+body.app-shell-android-material {
+  --m-radius-card: 4px;
+  --m-radius-input: 4px;
+}
+body.app-shell-android-material .m-card {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+body.app-shell-android-material .app-nav {
+  background: var(--m-accent); color: #fff;
+}
+body.app-shell-android-material .app-nav-title { color: #fff; }
+body.app-shell-android-material .app-nav-back,
+body.app-shell-android-material .app-nav-right { color: #fff; }
+
+/* ========== APP shell #3: fluent-glass（玻璃质感） ========== */
+body.app-shell-fluent-glass {
+  background: linear-gradient(135deg, var(--m-accent-soft), #f0f4f8) !important;
+}
+body.app-shell-fluent-glass .m-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+body.app-shell-fluent-glass .app-nav { background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); }
+body.app-shell-fluent-glass .app-tabbar { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px); }
+
+/* ========== APP shell #4: flat-mono（扁平极简） ========== */
+body.app-shell-flat-mono {
+  --m-radius-card: 0px;
+  --m-radius-input: 2px;
+  background: #fafafa !important;
+}
+body.app-shell-flat-mono .m-card {
+  box-shadow: none;
+  border: 1px solid #e5e7eb;
+}
+body.app-shell-flat-mono .app-nav {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+body.app-shell-flat-mono .app-tabbar { border-top: 1px solid #e5e7eb; box-shadow: none; }
+
+/* ========== APP shell #5: dark-pro（暗黑高级） ========== */
+body.app-shell-dark-pro {
+  background: #0f172a !important;
+  color: #e5e7eb;
+  --m-text: #e5e7eb;
+  --m-text-soft: #94a3b8;
+  --m-text-muted: #64748b;
+  --m-card: #1e293b;
+  --m-bg: #0f172a;
+  --m-border: rgba(255,255,255,0.08);
+  --m-divider: rgba(255,255,255,0.06);
+}
+body.app-shell-dark-pro .m-card {
+  background: #1e293b;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+body.app-shell-dark-pro .app-nav {
+  background: #1e293b; color: #e5e7eb;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+body.app-shell-dark-pro .app-nav-title { color: #e5e7eb; }
+body.app-shell-dark-pro .app-tabbar {
+  background: rgba(15,23,42,0.95); border-top: 1px solid rgba(255,255,255,0.08);
+}
+body.app-shell-dark-pro .ios-statusbar { color: #e5e7eb; }
+body.app-shell-dark-pro .ios-statusbar-dark { background: #0f172a; }
+body.app-shell-dark-pro .m-input,
+body.app-shell-dark-pro .m-textarea {
+  background: #1e293b; color: #e5e7eb; border-color: rgba(255,255,255,0.08);
+}
+
+/* ========== APP shell #6/7: drawer-left / drawer-right ========== */
+body.app-shell-drawer-left .drawer,
+body.app-shell-drawer-right .drawer {
+  background: var(--m-card);
+  padding: 14px;
+  border-right: 1px solid var(--m-divider);
+}
+body.app-shell-drawer-left .drawer-user,
+body.app-shell-drawer-right .drawer-user {
+  padding: 18px 6px 14px;
+  border-bottom: 1px solid var(--m-divider);
+  text-align: center;
+}
+body.app-shell-drawer-left .drawer-avatar,
+body.app-shell-drawer-right .drawer-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--m-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 600; margin: 0 auto 8px;
+}
+body.app-shell-drawer-left .drawer-name,
+body.app-shell-drawer-right .drawer-name { font-size: 15px; font-weight: 600; }
+body.app-shell-drawer-left .drawer-role,
+body.app-shell-drawer-right .drawer-role { font-size: 11px; color: var(--m-text-muted); margin-top: 2px; }
+body.app-shell-drawer-left .drawer-menu,
+body.app-shell-drawer-right .drawer-menu { padding-top: 10px; }
+body.app-shell-drawer-left .drawer-item,
+body.app-shell-drawer-right .drawer-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 10px; font-size: 14px;
+  border-radius: 8px; margin-bottom: 4px;
+}
+body.app-shell-drawer-left .drawer-item.active,
+body.app-shell-drawer-right .drawer-item.active {
+  background: var(--m-accent-soft); color: var(--m-accent); font-weight: 600;
+}
+body.app-shell-drawer-left .drawer-icon,
+body.app-shell-drawer-right .drawer-icon { font-size: 18px; width: 22px; }
+body.app-shell-drawer-left .hamburger,
+body.app-shell-drawer-right .hamburger { font-size: 18px; color: var(--m-text); width: 24px; text-align: center; }
+body.app-shell-drawer-left .drawer-left-open { width: 240px; float: left; min-height: 600px; }
+body.app-shell-drawer-left .app-main-drawer-left { margin-left: 240px; padding: 12px 14px; }
+body.app-shell-drawer-right .drawer-right-open { width: 240px; float: right; min-height: 600px; }
+body.app-shell-drawer-right .app-main-drawer-right { margin-right: 240px; padding: 12px 14px; }
+
+/* ========== APP shell #8: top-tabs（顶 5tab） ========== */
+body.app-shell-top-tabs .app-nav-toptab { border-bottom: none; padding: 0 14px; }
+body.app-shell-top-tabs .app-toptabs {
+  display: flex; background: #fff;
+  border-bottom: 1px solid var(--m-border);
+  padding: 0 8px;
+}
+body.app-shell-top-tabs .toptab-item {
+  flex: 1; text-align: center; padding: 12px 0;
+  font-size: 13px; color: var(--m-text-soft); border-bottom: 2px solid transparent;
+}
+body.app-shell-top-tabs .toptab-item.active {
+  color: var(--m-accent); border-bottom-color: var(--m-accent); font-weight: 600;
+}
+body.app-shell-top-tabs .app-main-toptab { padding-bottom: 20px; }
+
+/* ========== APP shell #9: segment-control（iOS 分段控件） ========== */
+body.app-shell-segment-control .app-segment {
+  display: flex; padding: 8px 14px 12px;
+  background: var(--m-bg);
+}
+body.app-shell-segment-control .app-segment .segment-item {
+  flex: 1; padding: 7px 0; text-align: center;
+  font-size: 13px; color: var(--m-text-soft);
+  background: rgba(0,0,0,0.05);
+}
+body.app-shell-segment-control .app-segment .segment-item:first-child { border-radius: 7px 0 0 7px; }
+body.app-shell-segment-control .app-segment .segment-item:last-child  { border-radius: 0 7px 7px 0; }
+body.app-shell-segment-control .app-segment .segment-item.active {
+  background: #fff; color: var(--m-text); font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ========== APP shell #10: rail-left（左侧 64px 窄竖栏） ========== */
+body.app-shell-rail-left { display: flex; }
+body.app-shell-rail-left .app-rail-vertical {
+  width: 64px; background: var(--m-dark); color: #fff;
+  min-height: 700px; flex-shrink: 0;
+  display: flex; flex-direction: column; padding: 18px 0;
+}
+body.app-shell-rail-left .rail-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 6px; opacity: 0.7; cursor: pointer;
+}
+body.app-shell-rail-left .rail-item.active {
+  opacity: 1; background: rgba(255,255,255,0.1);
+  border-left: 3px solid var(--m-accent);
+}
+body.app-shell-rail-left .rail-icon { font-size: 18px; }
+body.app-shell-rail-left .rail-label { font-size: 9px; }
+body.app-shell-rail-left .app-rail-body { flex: 1; }
+body.app-shell-rail-left .app-main-rail { padding: 12px 14px; }
+
+/* ========== APP shell #11: bubble-fab-center（中央大气泡） ========== */
+body.app-shell-bubble-fab-center .app-tabbar-bubble {
+  background: #fff; overflow: visible;
+}
+body.app-shell-bubble-fab-center .tab-bubble {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative; margin-top: -22px;
+}
+body.app-shell-bubble-fab-center .tab-bubble-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--m-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 600;
+  box-shadow: 0 4px 12px var(--m-accent-soft), 0 0 0 4px #fff;
+}
+body.app-shell-bubble-fab-center .tab-bubble-label {
+  font-size: 10px; color: var(--m-accent); margin-top: 6px; font-weight: 600;
+}
+
+/* ========== APP shell #12: card-stack（卡片堆叠信息流） ========== */
+body.app-shell-card-stack .app-main-stack { padding: 0; }
+body.app-shell-card-stack .m-card {
+  margin: 12px 12px 16px;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+body.app-shell-card-stack .app-nav-stack {
+  background: linear-gradient(180deg, var(--m-accent-soft), var(--m-bg));
+  border-bottom: none;
+}
+
+/* ========== APP shell #13: pull-tab（地图风上拉抽屉） ========== */
+body.app-shell-pull-tab { background: linear-gradient(180deg, #c2dcec 0%, #e0f0fa 50%); }
+body.app-shell-pull-tab .app-main-pulltab {
+  margin-top: 180px;
+  background: #fff; border-radius: 18px 18px 0 0;
+  padding: 8px 14px 80px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  min-height: 480px;
+}
+body.app-shell-pull-tab .pulltab-handle {
+  width: 40px; height: 4px; background: #d1d5db; border-radius: 2px;
+  margin: 0 auto 10px;
+}
+body.app-shell-pull-tab .pulltab-title {
+  font-size: 17px; font-weight: 700;
+  text-align: center; margin-bottom: 14px; color: var(--m-text);
+}
+
+/* ========== APP shell #14: floating-min（悬浮按钮极简） ========== */
+body.app-shell-floating-min {
+  --m-radius-card: 16px;
+  background: #fff !important;
+}
+body.app-shell-floating-min .app-nav { border-bottom: none; }
+body.app-shell-floating-min .app-nav-min { background: #fff; }
+body.app-shell-floating-min .m-card {
+  box-shadow: none; border: 1px solid #f3f4f6;
+}
+body.app-shell-floating-min .floating-fab {
+  position: fixed; right: 18px; bottom: 26px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--m-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; box-shadow: 0 6px 18px var(--m-accent-soft);
+  z-index: 99;
+}
+
+/* ========== APP shell #15: warm-friendly（暖色亲和） ========== */
+body.app-shell-warm-friendly {
+  --m-accent: #f97316;
+  --m-accent-soft: #fed7aa66;
+  --m-radius-card: 16px;
+  --m-radius-input: 12px;
+  background: #fff8f3 !important;
+}
+body.app-shell-warm-friendly .m-card {
+  background: #fff; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.08);
+}
+body.app-shell-warm-friendly .app-nav {
+  background: #fff8f3;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.1);
+}
+
+/* =================================================================
+ * 小程序 5 套 shell
+ * =================================================================
+ */
+
+/* ========== miniapp #1: wx-classic（默认，无额外覆盖） ========== */
+
+/* ========== miniapp #2: vivid-brand（顶部品牌色 banner） ========== */
+body.miniapp-shell-vivid-brand .wx-statusbar-vivid {
+  background: var(--m-accent);
+}
+body.miniapp-shell-vivid-brand .wx-statusbar-vivid > span {
+  color: #fff;
+}
+body.miniapp-shell-vivid-brand .wx-capsule-on-color {
+  background: rgba(255,255,255,0.25); color: #fff;
+  border: 0.5px solid rgba(255,255,255,0.4);
+}
+body.miniapp-shell-vivid-brand .ma-header-vivid {
+  height: auto; padding: 12px 16px 26px;
+  background: linear-gradient(180deg, var(--m-accent), var(--m-dark));
+  color: #fff;
+}
+body.miniapp-shell-vivid-brand .ma-header-banner .ma-banner-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 4px;
+}
+body.miniapp-shell-vivid-brand .ma-header-banner .ma-banner-sub {
+  font-size: 12px; opacity: 0.85;
+}
+body.miniapp-shell-vivid-brand .ma-main-vivid {
+  background: var(--m-bg);
+  margin-top: -14px; border-radius: 14px 14px 0 0; padding-top: 16px;
+}
+body.miniapp-shell-vivid-brand .m-card { border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+
+/* ========== miniapp #3: monochrome（黑白极简） ========== */
+body.miniapp-shell-monochrome {
+  --m-accent: #1f2937;
+  --m-accent-soft: rgba(31, 41, 55, 0.08);
+  background: #f7f7f7 !important;
+}
+body.miniapp-shell-monochrome .wx-statusbar-mono { background: #f7f7f7; }
+body.miniapp-shell-monochrome .wx-capsule-mono {
+  background: transparent; border: 0.5px solid #d1d5db; color: #1f2937;
+}
+body.miniapp-shell-monochrome .ma-header-mono {
+  background: #f7f7f7; border-bottom: 0.5px solid #e5e7eb;
+}
+body.miniapp-shell-monochrome .m-card {
+  background: #fff; border: 0.5px solid #e5e7eb;
+  box-shadow: none; border-radius: 4px;
+}
+body.miniapp-shell-monochrome .ma-tabbar-mono { background: #fff; border-top: 0.5px solid #e5e7eb; }
+
+/* ========== miniapp #4: warm-card（暖色调） ========== */
+body.miniapp-shell-warm-card {
+  --m-accent: #ec4899;
+  --m-accent-soft: rgba(236, 72, 153, 0.12);
+  background: #fff5f7 !important;
+}
+body.miniapp-shell-warm-card .wx-statusbar-warm { background: #fff5f7; }
+body.miniapp-shell-warm-card .wx-capsule-warm {
+  background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.25);
+}
+body.miniapp-shell-warm-card .ma-header-warm {
+  background: #fff5f7;
+}
+body.miniapp-shell-warm-card .ma-main-warm { background: #fff5f7; }
+body.miniapp-shell-warm-card .m-card {
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.08);
+}
+body.miniapp-shell-warm-card .ma-tabbar-warm { background: #fff; }
+body.miniapp-shell-warm-card .ma-tabbar-warm .tab-item.active { color: #ec4899; }
+
+/* ========== miniapp #5: cool-flat（冷色 SaaS） ========== */
+body.miniapp-shell-cool-flat {
+  --m-accent: #0284c7;
+  --m-accent-soft: rgba(2, 132, 199, 0.12);
+  --m-radius-card: 6px;
+  background: #f1f5f9 !important;
+}
+body.miniapp-shell-cool-flat .wx-statusbar-cool { background: #f1f5f9; }
+body.miniapp-shell-cool-flat .wx-capsule-cool {
+  background: #fff; border-color: #cbd5e1;
+}
+body.miniapp-shell-cool-flat .ma-header-cool {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+body.miniapp-shell-cool-flat .ma-main-cool { background: #f1f5f9; }
+body.miniapp-shell-cool-flat .m-card {
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e2e8f0;
+}
+body.miniapp-shell-cool-flat .ma-tabbar-cool { background: #fff; }
+body.miniapp-shell-cool-flat .ma-tabbar-cool .tab-item.active { color: #0284c7; }

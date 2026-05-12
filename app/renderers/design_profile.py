@@ -45,6 +45,39 @@ SHELLS: list[str] = [
     "floating-card",     # 灰色大背景 + 中央漂浮 1180×760 大白卡（自带顶栏+左栏+content）
     "window-chrome",     # 48 桌面窗口标题栏（红黄绿圆点）+ 200 左栏 + content
 ]
+
+# ——— 移动端 APP shell 主题（15 套）——————————————————————————————
+# 同一份 HTML 模板（如 app_home.html）在不同 mobile_app_shell 下，
+# 通过 _app_shell.html 的 {% if app_shell == 'xxx' %} 控制结构差异，
+# _mobile.css 用 body.app-shell-xxx 选择器覆盖颜色 / 卡片 / 圆角 / 阴影。
+MOBILE_APP_SHELLS: list[str] = [
+    "ios-bottom",         # iOS 经典底 5tab，大圆角，软阴影，白底
+    "android-material",   # Material 风，直角，FAB 浮动按钮，主色调强
+    "fluent-glass",       # Fluent 玻璃质感，半透明卡片，模糊背景
+    "flat-mono",          # 扁平极简，无阴影，单色线条，灰底白卡
+    "dark-pro",           # 暗黑高级，深蓝深紫渐变，高对比
+    "drawer-left",        # 左侧抽屉，顶部汉堡按钮 + 用户头像
+    "drawer-right",       # 右侧抽屉，简洁顶栏
+    "top-tabs",           # 顶部 5tab 切换（无底 tabbar）
+    "segment-control",    # iOS SegmentControl 风分段控件
+    "rail-left",          # 左侧 64px 窄竖栏 + 主区
+    "bubble-fab-center",  # 中央大气泡按钮（外卖/打车 APP 风）
+    "card-stack",         # 卡片堆叠（信息流 APP 风）
+    "pull-tab",           # 底部可上下拉抽屉（地图 APP 风）
+    "floating-min",       # 悬浮主操作按钮 + 极简空白
+    "warm-friendly",      # 暖色系（橙黄），亲和力强，大圆角
+]
+
+# ——— 微信小程序 shell 主题（5 套）——————————————————————————————
+# 受微信限制：胶囊必须在右上、tabbar 4 个固定。可变维度：配色、卡片、顶部样式、密度。
+MOBILE_MINIAPP_SHELLS: list[str] = [
+    "wx-classic",      # 经典微信绿 + 白卡 + 灰底（默认）
+    "vivid-brand",     # 品牌强色 banner（顶部全色），白色圆角卡片
+    "monochrome",      # 黑白极简（高级感），细线分隔，无阴影
+    "warm-card",       # 暖色调（橙黄/玫红），大圆角卡片，柔和阴影
+    "cool-flat",       # 冷色调（蓝灰），扁平，强对比，企业 SaaS 感
+]
+
 RADII: list[int] = [0, 4, 8, 12]
 DENSITIES: list[str] = ["comfortable", "compact"]
 FONTS: list[str] = ["system", "pingfang", "source-han", "noto-serif"]
@@ -68,13 +101,16 @@ def _pick_design_profile(seed: str) -> dict[str, Any]:
     """
     h = hashlib.md5(seed.encode("utf-8")).digest()  # 16 bytes
 
-    palette     = PALETTES[h[0] % len(PALETTES)]
-    shell       = SHELLS[h[2] % len(SHELLS)]
-    radius      = RADII[h[4] % len(RADII)]
-    density     = DENSITIES[h[6] % len(DENSITIES)]
-    font        = FONTS[h[8] % len(FONTS)]
-    card_style  = CARD_STYLES[h[10] % len(CARD_STYLES)]
-    brand_mark  = BRAND_MARKS[h[12] % len(BRAND_MARKS)]
+    palette          = PALETTES[h[0] % len(PALETTES)]
+    shell            = SHELLS[h[2] % len(SHELLS)]
+    radius           = RADII[h[4] % len(RADII)]
+    density          = DENSITIES[h[6] % len(DENSITIES)]
+    font             = FONTS[h[8] % len(FONTS)]
+    card_style       = CARD_STYLES[h[10] % len(CARD_STYLES)]
+    brand_mark       = BRAND_MARKS[h[12] % len(BRAND_MARKS)]
+    # 移动端主题：用不同字节避免与 PC shell 相关
+    mobile_app_shell     = MOBILE_APP_SHELLS[h[1] % len(MOBILE_APP_SHELLS)]
+    mobile_miniapp_shell = MOBILE_MINIAPP_SHELLS[h[3] % len(MOBILE_MINIAPP_SHELLS)]
 
     return {
         "palette": palette,
@@ -84,6 +120,8 @@ def _pick_design_profile(seed: str) -> dict[str, Any]:
         "font": font,
         "card_style": card_style,
         "brand_mark": brand_mark,
+        "mobile_app_shell": mobile_app_shell,
+        "mobile_miniapp_shell": mobile_miniapp_shell,
     }
 
 

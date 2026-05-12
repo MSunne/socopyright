@@ -477,23 +477,21 @@ async def _gen_ui_shell(spec: dict) -> dict:
 
 
 async def _gen_mobile_shell(spec: dict) -> dict:
-    """M2: 移动端壳数据（tabbar + 登录页文案 + 首页 KPI）。mobile_kind=none 时返回空 dict。"""
-    mk = spec.get("mobile_kind", "none")
-    if mk == "none":
-        return {}
-    kind_label_map = {"app": "原生 APP", "miniapp": "微信小程序", "both": "APP 与小程序"}
-    kind_label = kind_label_map.get(mk, "移动端")
-    kind_hint_map = {
+    """M2: 移动端壳数据（tabbar + 登录页文案 + 首页 KPI）。每份软著必出，2 选 1。"""
+    mk = spec.get("mobile_kind", "miniapp")
+    if mk not in ("app", "miniapp"):
+        mk = "miniapp"
+    kind_label = {"app": "原生 APP", "miniapp": "微信小程序"}[mk]
+    kind_hint = {
         "app": "APP 拥有 5 个底部 tab 是常见结构。tabbar 第一个一般是「首页/工作台」。",
         "miniapp": "小程序固定 4 个 tabbar（受微信平台限制）。第一个一般是「首页」。",
-        "both": "如果是 APP 提供 5 个 tab，小程序 4 个；统一给 4 个，前 4 个都能用。",
-    }
-    n_tabs = 4 if mk in ("miniapp", "both") else 5
+    }[mk]
+    n_tabs = 4 if mk == "miniapp" else 5
     prompt = _MOBILE_SHELL_PROMPT.format(
         name=spec["software_name"],
         desc=spec.get("main_description", "")[:400],
         kind_label=kind_label,
-        kind_hint=kind_hint_map.get(mk, ""),
+        kind_hint=kind_hint,
         n_tabs=n_tabs,
     )
     try:
@@ -567,55 +565,48 @@ def _sanitize_module(m: dict, mod_spec: dict, template: str, *, mobile_kind: str
             subs = [{"type": "list"}]
         # 裁剪到 [1, 4]，list 必须存在（_normalize_rich_subpages 也会再次校验）
         out["sub_pages"] = subs[:4]
-    # M3: 校验 mobile_pages（先过滤，再切片到 3）
+    # M3: 校验 mobile_pages（必出，2 选 1）
     all_mobile_types = set(MOBILE_APP_TYPES) | set(MOBILE_MINIAPP_TYPES)
     cleaned_mobile = []
-    if mobile_kind != "none":
-        for p in out.get("mobile_pages", []):
-            if not isinstance(p, dict):
-                continue
-            t = p.get("type", "")
-            if t not in all_mobile_types:
-                continue
-            # mobile_kind=miniapp 时拒绝 app_*；反之亦然；both 全收
-            if mobile_kind == "miniapp" and not t.startswith("miniapp_"):
-                continue
-            if mobile_kind == "app" and not t.startswith("app_"):
-                continue
-            cleaned_mobile.append({"type": t, "caption": str(p.get("caption", "") or "").strip()})
+    expected_prefix = "miniapp_" if mobile_kind == "miniapp" else "app_"
+    for p in out.get("mobile_pages", []):
+        if not isinstance(p, dict):
+            continue
+        t = p.get("type", "")
+        if t not in all_mobile_types:
+            continue
+        # 严格按 mobile_kind 过滤：miniapp_* 或 app_*
+        if not t.startswith(expected_prefix):
+            continue
+        cleaned_mobile.append({"type": t, "caption": str(p.get("caption", "") or "").strip()})
+    # 兜底：LLM 没给或全被过滤，至少塞一个 list 类型
+    if not cleaned_mobile:
+        fallback_type = f"{expected_prefix}list"
+        cleaned_mobile = [{"type": fallback_type, "caption": ""}]
     out["mobile_pages"] = cleaned_mobile[:3]  # 单模块最多 3 个
     return out
 
 
 def _mobile_pages_guide(mobile_kind: str) -> tuple[str, str]:
-    """根据 mobile_kind 返回 (例子类型, prompt 引导文本)。"""
-    if mobile_kind == "miniapp":
-        example = "miniapp_list"
-        guide = (
-            "type 必须从以下小程序模板选：miniapp_list / miniapp_detail / miniapp_form / "
-            "miniapp_qrcode / miniapp_pay / miniapp_coupon / miniapp_order / miniapp_member / "
-            "miniapp_appointment / miniapp_review / miniapp_address / miniapp_customer / "
-            "miniapp_grid / miniapp_chart / miniapp_search / miniapp_share。"
-            "为本模块挑 1-3 个最贴合该业务功能的小程序页面。"
-        )
-    elif mobile_kind == "app":
+    """根据 mobile_kind 返回 (例子类型, prompt 引导文本)。2 选 1：miniapp / app。"""
+    if mobile_kind == "app":
         example = "app_list"
         guide = (
             "type 必须从以下 APP 模板选：app_list / app_detail / app_form / app_search / "
             "app_profile / app_message / app_scan / app_chart / app_camera / app_map / "
             "app_notify / app_settings / app_approval / app_calendar / app_task / app_filter / "
             "app_workbench / app_chat。"
-            "为本模块挑 1-3 个最贴合该业务功能的 APP 页面。"
+            "**必须**为本模块挑 1-3 个最贴合该业务功能的 APP 页面（不允许空）。"
         )
-    elif mobile_kind == "both":
-        example = "app_list"
+    else:  # miniapp（默认）
+        example = "miniapp_list"
         guide = (
-            "**both 模式**：可以混选 app_* 和 miniapp_* 类型。1-3 个，挑最适合该业务的。"
-            "APP 类型见 app_*，小程序类型见 miniapp_*。"
+            "type 必须从以下小程序模板选：miniapp_list / miniapp_detail / miniapp_form / "
+            "miniapp_qrcode / miniapp_pay / miniapp_coupon / miniapp_order / miniapp_member / "
+            "miniapp_appointment / miniapp_review / miniapp_address / miniapp_customer / "
+            "miniapp_grid / miniapp_chart / miniapp_search / miniapp_share。"
+            "**必须**为本模块挑 1-3 个最贴合该业务功能的小程序页面（不允许空）。"
         )
-    else:  # none
-        example = ""
-        guide = "**mobile_kind=none，本字段必须是空数组 []**。"
     return example, guide
 
 
@@ -630,7 +621,7 @@ async def _gen_module_ui(spec: dict, mod_spec: dict, template: str, sub_quota: i
         end_d = _date.today() - _td(days=30)
     start_d = end_d - _td(days=30)
 
-    mobile_kind = spec.get("mobile_kind", "none")
+    mobile_kind = spec.get("mobile_kind", "miniapp")
     mobile_type_example, mobile_pages_guide = _mobile_pages_guide(mobile_kind)
 
     common = dict(
@@ -957,8 +948,19 @@ def _mobile_context(spec: dict, ui: dict, profile: dict, *, page_type: str,
                     page_title: str = "", module_title: str = "",
                     show_back: bool = True) -> dict[str, Any]:
     """所有 mobile 模板共用的 context 基底。"""
-    mshell = ui.get("mobile_shell", {}) or {}
+    mshell_data = ui.get("mobile_shell", {}) or {}
     op_user = ui.get("op_user", "管理员")
+    # M5: 注入 mobile shell 主题（15 套 APP / 5 套 miniapp）
+    app_shell = profile.get("mobile_app_shell", "ios-bottom")
+    miniapp_shell = profile.get("mobile_miniapp_shell", "wx-classic")
+    # body class：mobile-app + app-shell-xxx 或 mobile-miniapp + miniapp-shell-xxx
+    pc_classes = _body_classes(profile).replace("shell-", "_unused-")  # 剔除 PC shell-* class
+    if page_type.startswith("app_"):
+        body_classes = f"mobile-app app-shell-{app_shell} {pc_classes}"
+    elif page_type.startswith("miniapp_"):
+        body_classes = f"mobile-miniapp miniapp-shell-{miniapp_shell} {pc_classes}"
+    else:
+        body_classes = pc_classes
     return {
         "software_name": spec["software_name"],
         "page_title": page_title,
@@ -966,15 +968,18 @@ def _mobile_context(spec: dict, ui: dict, profile: dict, *, page_type: str,
         "op_user": op_user,
         "avatar_char": op_user[:1] if op_user else "U",
         "mobile_css": _mobile_css(profile),
-        "body_classes": _body_classes(profile).replace("shell-", "_unused-"),  # mobile 不用 shell-* class
-        "mobile_tabs": mshell.get("mobile_tabs", []),
-        "slogan": mshell.get("mobile_login_slogan", ui.get("slogan", "")),
-        "home_metrics": mshell.get("mobile_home_metrics", []) or ui.get("home_metrics", []),
+        "body_classes": body_classes,
+        "mobile_tabs": mshell_data.get("mobile_tabs", []),
+        "slogan": mshell_data.get("mobile_login_slogan", ui.get("slogan", "")),
+        "home_metrics": mshell_data.get("mobile_home_metrics", []) or ui.get("home_metrics", []),
         "company_name": spec["owner"]["name"],
         "year": spec.get("completion_date", "2025-01-01")[:4],
         # APP 模板里的 is_login 标志：仅 app_login/miniapp_login 时为 True
         "is_login": page_type in ("app_login", "miniapp_login"),
         "show_back": show_back,
+        # M5: shell 名字注入到 Jinja，供 _shell.html 用 {% if app_shell == 'xxx' %}
+        "app_shell": app_shell,
+        "miniapp_shell": miniapp_shell,
         # 给 chart/share 等用到的 COLOR_* 注入到 Jinja context
         **{k: v for k, v in _profile_css_vars(profile).items()},
     }
@@ -1117,7 +1122,7 @@ async def render(
     profile = _pick_design_profile(spec["software_name"])
 
     # 2. 规划所有要截的图（移动端在前 + 模块内 mobile→PC 混合）
-    mobile_kind = spec.get("mobile_kind", "none")
+    mobile_kind = spec.get("mobile_kind", "miniapp")
     shot_plan: list[dict] = []  # 每项: {kind, module_idx, sub, caption, platform, viewport}
 
     def _platform_of(kind: str) -> str:
@@ -1142,13 +1147,13 @@ async def render(
             "viewport": _viewport_of(platform),
         })
 
-    # —— 全局 mobile（如果有）—— login + home
-    if mobile_kind in ("miniapp", "both"):
-        _add_shot("miniapp_login", -1, None, "小程序授权页")
-        _add_shot("miniapp_home", -1, None, "小程序首页")
-    if mobile_kind in ("app", "both"):
+    # —— 全局 mobile（每份软著必出，2 选 1） —— login + home
+    if mobile_kind == "app":
         _add_shot("app_login", -1, None, "APP 登录页")
         _add_shot("app_home", -1, None, "APP 首页")
+    else:  # miniapp（默认）
+        _add_shot("miniapp_login", -1, None, "小程序授权页")
+        _add_shot("miniapp_home", -1, None, "小程序首页")
 
     # —— 全局 PC —— login + home
     _add_shot("login", -1, None, "PC 登录页")

@@ -27,12 +27,12 @@ PUBLISH_STATUSES = {"未发表", "已发表"}
 DEV_MODES = {"单独开发", "合作开发", "委托开发", "下达任务开发"}
 _VERSION_RE = re.compile(r"^V\d+\.\d+(\.\d+)?$")
 
-# 第三轮 M1：移动端形态白名单（none / miniapp / app / both）
-# none    = 纯后端管理/工控/中台，没有手机端
-# miniapp = C 端轻应用、扫码、会员、点单（微信小程序）
-# app     = B 端便携工具（巡检/外勤）或 C 端深度应用（健身/教育）
-# both    = 大型 C 端综合服务（电商/银行/出行）—— 极少
-MOBILE_KINDS = {"none", "miniapp", "app", "both"}
+# 第三轮 M1：移动端形态白名单（2 选 1，无 none/both）
+# miniapp = C 端轻应用、扫码、会员、点单、预约等（微信小程序）
+# app     = B 端便携工具（巡检/外勤/审批）或 C 端深度应用（健身/教育/IM）
+# 注意：每份软著必出移动端，因为 2026 年的业务系统几乎都有手机端入口；
+# 审核员看到一份只有 PC 端的软著反而会起疑。
+MOBILE_KINDS = {"miniapp", "app"}
 
 # USCC 第 1 位 → 著作权人类型 / 证件类型
 # 参考 GB 32100 登记管理部门代码：1 机构编制、5 民政、9 工商、Y 其他
@@ -210,11 +210,19 @@ def _normalize_enums(spec: dict) -> dict:
     if spec["dev_mode"] not in DEV_MODES:
         spec["dev_mode"] = "单独开发"
 
-    # M1: 移动端形态白名单兜底
+    # M1: 移动端形态白名单兜底（必须 2 选 1：miniapp / app）
+    # 如果 LLM 抖出 none/both/其他，按行业/industry 字段简单分流：
+    # - 含"管理/中台/调度/制造/工业/巡检/外勤/审批"等 B 端关键词 → app
+    # - 其它 → miniapp（默认偏 C 端轻应用）
     mk = (spec.get("mobile_kind") or "").strip().lower()
     if mk not in MOBILE_KINDS:
-        logger.warning("mobile_kind=%r 不在白名单，兜底为 none", mk)
-        spec["mobile_kind"] = "none"
+        industry = (spec.get("industry") or "") + (spec.get("software_name") or "")
+        app_keywords = ("管理", "中台", "调度", "制造", "工业", "巡检", "外勤",
+                        "审批", "工单", "采集", "点检", "排产", "车间", "施工",
+                        "物流", "配送", "现场", "设备", "运维", "打卡", "SaaS")
+        chosen = "app" if any(k in industry for k in app_keywords) else "miniapp"
+        logger.warning("mobile_kind=%r 不在 2 选 1 白名单，按业务关键词兜底为 %s", mk, chosen)
+        spec["mobile_kind"] = chosen
     else:
         spec["mobile_kind"] = mk
     spec.setdefault("mobile_kind_reason", "")
@@ -282,20 +290,26 @@ _SPEC_PROMPT = """为下述软件生成完整的软著登记元数据。
     共 10 个功能模块，必须全部紧扣'{topic}'业务主线
   ],
 
-  "mobile_kind": "判断该软件最合理的移动端形态，4 选 1：none / miniapp / app / both",
+  "mobile_kind": "判断该软件最合理的移动端形态，**2 选 1**：miniapp / app",
   "mobile_kind_reason": "20-50 字说明为什么选这种"
 }}
 
-mobile_kind 选型 rubric：
-- "none"：纯后端管理 / 工控 / 数据中台 / SCADA / 内部 BI 等——不需要任何手机端
-- "miniapp"：C 端轻应用，低频使用，扫码/支付/会员/点单/预约场景（如餐饮、商超、活动报名）—— 优先选微信小程序
-- "app"：B 端便携工具（巡检、外勤打卡、设备点检）或 C 端深度高频应用（健身、教育、社交）—— 选原生 APP
-- "both"：大型 C 端综合服务（电商、银行、出行）—— **极少**，只有功能复杂到 APP 必备、同时引流又靠小程序时选
+mobile_kind 选型 rubric（必出移动端，2 选 1）：
+- "miniapp"：偏 C 端 / 轻量场景：扫码、会员、点单、预约、客户端查询、营销活动、轻量自助服务等。
+  典型行业：餐饮、商超、零售、教育报名、医院挂号、活动会展、文化娱乐、出行打车、生活服务。
+  特征：用户不愿装 APP、低频使用、关注即用即走、靠微信渠道引流。
+
+- "app"：偏 B 端便携 / C 端深度场景：现场巡检、外勤打卡、设备点检、采集上报、审批流转、
+  IM 沟通、高频日常工具（健身、教育、笔记、社交、专业 SaaS）。
+  典型行业：制造业 SaaS、施工管理、物流配送、医疗 HIS 配套、政企移动办公、专业内容平台、社交、IM。
+  特征：高频使用、需要后台推送/相机/定位等深度能力、用户愿意装 APP。
+
+**重要：每份软著必出移动端，不允许选其他值或留空**。如果犹豫不决，C 端业务选 miniapp，B 端业务选 app。
 
 禁止：
 - 不要写与"{topic}"无关的通用功能（如"用户管理""权限管理"这种太泛的不计入 10 个模块）
 - main_description **绝对不能**以"该平台 / 该系统 / 该软件 / 本系统 / 本平台"开头（这种开头是 AI 写作的标志）
-- mobile_kind 必须严格 4 选 1，**绝对不要写其他值**
+- mobile_kind 必须严格 2 选 1（miniapp / app），**绝对不要写 none / both / 其他**
 - 不要在 JSON 外输出任何文字
 - 不要用 markdown 包裹
 """
