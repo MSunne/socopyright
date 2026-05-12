@@ -1,0 +1,69 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 顶部用户数据 #}
+<div style="background: linear-gradient(135deg, #f59e0b, #ec4899); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; color: #fff;">
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+    <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size: 16px; font-weight: 600;">{{ avatar_char }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 15px; font-weight: 600;">{{ op_user }}</div>
+      <div style="font-size: 11px; opacity: 0.85;">{{ ma_coupon_level or '黄金会员' }} · 距下一级还需 ¥2,580</div>
+    </div>
+  </div>
+  <div class="m-grid-3">
+    {% for k in (ma_coupon_stats or [
+      {'num':'12','lbl':'可用券'},
+      {'num':'¥1,288','lbl':'累计省'},
+      {'num':'8.5 折','lbl':'当前折扣'}
+    ]) %}
+    <div style="text-align: center;">
+      <div style="font-size: 17px; font-weight: 700;">{{ k.num }}</div>
+      <div style="font-size: 10px; opacity: 0.85; margin-top: 2px;">{{ k.lbl }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# tabs #}
+<div style="display: flex; gap: 22px; padding: 0 4px 10px; border-bottom: 0.5px solid var(--m-divider); margin-bottom: 14px;">
+  {% for t in (ma_coupon_tabs or [{'n':'可用','c':12,'sel':true},{'n':'已用','c':38,'sel':false},{'n':'过期','c':4,'sel':false}]) %}
+  <div style="font-size: 13px; padding: 4px 0;
+              {% if t.sel %}color: var(--wx-green); font-weight: 600; border-bottom: 2px solid var(--wx-green);
+              {% else %}color: var(--m-text-soft);{% endif %}">
+    {{ t.n }}<span style="font-size: 11px; margin-left: 2px;">({{ t.c }})</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 优惠券列表 #}
+{% for c in (ma_coupon_list or [
+  {'amt':'200','min':'2000','title':'印刷服务专用券','sub':'仅限 PS 版印刷使用','valid':'有效期至 2025-12-31','color':'#ef4444','tag':'限时'},
+  {'amt':'88','min':'500','title':'全场通用券','sub':'所有商品可用','valid':'有效期至 2026-01-15','color':'#f59e0b','tag':'热门'},
+  {'amt':'500','min':'5000','title':'会员专享大额券','sub':'金牌会员专享','valid':'有效期至 2026-02-28','color':'#8b5cf6','tag':'专享'},
+  {'amt':'30','min':'200','title':'新人见面礼','sub':'首次下单可用','valid':'有效期至 2025-11-30','color':'#10b981','tag':'新人'}
+]) %}
+<div style="display: flex; background: #fff; border-radius: 10px; margin-bottom: 10px; overflow: hidden; position: relative;">
+  {# 左侧金额 #}
+  <div style="width: 100px; padding: 18px 8px; background: linear-gradient(135deg, {{ c.color }}, {{ c.color }}cc); color: #fff; text-align: center; position: relative;">
+    <div style="font-size: 10px; opacity: 0.85;">¥</div>
+    <div style="font-size: 28px; font-weight: 700; line-height: 1.1; margin-top: 2px;">{{ c.amt }}</div>
+    <div style="font-size: 9px; opacity: 0.85; margin-top: 2px;">满 {{ c.min }} 可用</div>
+    {# 虚线缝合 #}
+    <div style="position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; border-radius: 50%; background: #ededed;"></div>
+  </div>
+  <div style="flex:1; padding: 14px; display: flex; flex-direction: column; justify-content: center;">
+    <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 4px;">
+      <span style="font-size: 9px; padding: 1px 4px; background: {{ c.color }}; color: #fff; border-radius: 2px;">{{ c.tag }}</span>
+      <span style="font-size: 13px; font-weight: 600; color: var(--m-text);">{{ c.title }}</span>
+    </div>
+    <div style="font-size: 11px; color: var(--m-text-soft);">{{ c.sub }}</div>
+    <div style="font-size: 10px; color: var(--m-text-muted); margin-top: 4px;">{{ c.valid }}</div>
+  </div>
+  <div style="display: flex; align-items: center; padding-right: 14px;">
+    <button style="padding: 5px 12px; background: {{ c.color }}; color: #fff; border: none; border-radius: 14px; font-size: 12px;">使用</button>
+  </div>
+</div>
+{% endfor %}
+
+{# 底部提示 #}
+<div style="text-align: center; padding: 14px 0; font-size: 11px; color: var(--m-text-muted);">—— 没有更多券了 ——</div>
+{% endblock %}

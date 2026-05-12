@@ -1,0 +1,80 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部固定面包屑 #}
+<div style="background: #fff; margin: -12px -14px 12px; padding: 10px 16px; border-bottom: 0.5px solid var(--m-border); font-size: 12px; color: var(--m-text-soft);">
+  已选 <b style="color: var(--m-accent);">5 个</b> 筛选条件 · 命中 <b style="color: var(--m-accent);">{{ filter_hits or '238' }}</b> 条数据
+</div>
+
+{# 时间范围 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">时间范围</div>
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px;">
+    {% for p in ['今天', '近 7 天', '本月', '本季度'] %}
+    <div style="text-align: center; padding: 7px 0; border-radius: 6px; font-size: 12px;
+                {% if loop.index == 2 %}background: var(--m-accent); color: #fff;
+                {% else %}background: #f3f4f6; color: var(--m-text-soft);{% endif %}">{{ p }}</div>
+    {% endfor %}
+  </div>
+  <div style="display: flex; gap: 8px; align-items: center; font-size: 12px;">
+    <div class="m-input" style="flex:1; padding: 8px 10px;">2025-11-05</div>
+    <span style="color: var(--m-text-muted);">至</span>
+    <div class="m-input" style="flex:1; padding: 8px 10px;">2025-11-12</div>
+  </div>
+</div>
+
+{# 业务类型 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">业务类型 <span style="font-size: 11px; color: var(--m-text-muted); font-weight: 400;">（多选）</span></div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    {% for c in (filter_categories or [
+      {'n':'PS 版印刷','sel':true}, {'n':'柔印','sel':false}, {'n':'凹印','sel':true},
+      {'n':'数字印刷','sel':false}, {'n':'装订','sel':true}, {'n':'装饰','sel':false},
+      {'n':'打样','sel':false}, {'n':'专色','sel':true}
+    ]) %}
+    <div style="padding: 6px 12px; border-radius: 14px; font-size: 12px;
+                {% if c.sel %}background: var(--m-accent-soft); color: var(--m-accent); border: 1px solid var(--m-accent);
+                {% else %}background: #fff; color: var(--m-text-soft); border: 1px solid var(--m-border);{% endif %}">
+      {% if c.sel %}✓ {% endif %}{{ c.n }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 状态 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">状态</div>
+  {% for s in (filter_status or [
+    {'name':'待处理','count':28,'sel':true},
+    {'name':'处理中','count':156,'sel':true},
+    {'name':'已完成','count':1284,'sel':false},
+    {'name':'已驳回','count':12,'sel':false}
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 16px; height: 16px; border: 1.5px solid {% if s.sel %}var(--m-accent){% else %}var(--m-border){% endif %}; border-radius: 4px; background: {% if s.sel %}var(--m-accent){% else %}#fff{% endif %}; color: #fff; font-size: 11px; text-align: center; line-height: 14px;">
+      {% if s.sel %}✓{% endif %}
+    </div>
+    <span style="flex:1; font-size: 13px;">{{ s.name }}</span>
+    <span style="font-size: 11px; color: var(--m-text-muted);">{{ s.count }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 数值范围（滑块） #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">订单金额（万元）</div>
+  <div style="position: relative; height: 36px; margin: 0 8px;">
+    <div style="position: absolute; top: 16px; left: 0; right: 0; height: 4px; background: #e5e7eb; border-radius: 2px;"></div>
+    <div style="position: absolute; top: 16px; left: 20%; right: 30%; height: 4px; background: var(--m-accent); border-radius: 2px;"></div>
+    <div style="position: absolute; top: 10px; left: 20%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid var(--m-accent);"></div>
+    <div style="position: absolute; top: 10px; right: 30%; transform: translateX(50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid var(--m-accent);"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--m-text-soft); margin-top: 2px;">
+    <span>5</span><span>10</span><span>30</span><span>50</span><span>100</span>
+  </div>
+</div>
+
+<div style="position: fixed; left: 0; right: 0; bottom: 60px; background: #fff; border-top: 0.5px solid var(--m-border); padding: 10px 14px; display: flex; gap: 10px;">
+  <button class="m-btn outline" style="flex:1;">重置</button>
+  <button class="m-btn" style="flex:2;">应用筛选（{{ filter_hits or '238' }}）</button>
+</div>
+{% endblock %}

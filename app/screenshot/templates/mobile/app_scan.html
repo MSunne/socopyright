@@ -1,0 +1,46 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+<div style="margin: -12px -14px 0; padding: 0; background: #000; min-height: 600px; position: relative; color: #fff;">
+  {# 半透明蒙层 #}
+  <div style="padding: 60px 0 30px; text-align: center; background: rgba(0,0,0,0.6);">
+    <div style="font-size: 16px; font-weight: 600;">{{ scan_title or '扫一扫' }}</div>
+    <div style="font-size: 12px; opacity: 0.8; margin-top: 6px;">{{ scan_subtitle or '将二维码放入框中即可自动扫描' }}</div>
+  </div>
+
+  {# 取景框 #}
+  <div style="position: relative; margin: 0 auto; width: 240px; height: 240px;">
+    {# 四角 #}
+    <div style="position: absolute; top: 0; left: 0; width: 28px; height: 28px; border-top: 3px solid var(--m-accent); border-left: 3px solid var(--m-accent);"></div>
+    <div style="position: absolute; top: 0; right: 0; width: 28px; height: 28px; border-top: 3px solid var(--m-accent); border-right: 3px solid var(--m-accent);"></div>
+    <div style="position: absolute; bottom: 0; left: 0; width: 28px; height: 28px; border-bottom: 3px solid var(--m-accent); border-left: 3px solid var(--m-accent);"></div>
+    <div style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border-bottom: 3px solid var(--m-accent); border-right: 3px solid var(--m-accent);"></div>
+    {# 扫描线 #}
+    <div style="position: absolute; left: 8px; right: 8px; top: 120px; height: 2px; background: linear-gradient(90deg, transparent, var(--m-accent), transparent); box-shadow: 0 0 8px var(--m-accent);"></div>
+    {# 模拟二维码网格 #}
+    <div style="position: absolute; top: 30px; left: 30px; right: 30px; bottom: 30px; opacity: 0.4;
+                background-image: repeating-linear-gradient(0deg, transparent 0 8px, #fff 8px 9px),
+                                  repeating-linear-gradient(90deg, transparent 0 8px, #fff 8px 9px);"></div>
+  </div>
+
+  {# 提示文字 #}
+  <div style="text-align: center; padding: 18px 30px 30px;">
+    <div style="font-size: 13px; opacity: 0.85;">{{ scan_hint or '识别中…请勿移动手机' }}</div>
+  </div>
+
+  {# 底部操作栏 #}
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); padding: 18px 30px 30px; display: flex; justify-content: space-around; align-items: center;">
+    <div style="text-align: center;">
+      <div style="font-size: 24px;">💡</div>
+      <div style="font-size: 11px; margin-top: 4px; opacity: 0.85;">闪光灯</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 24px;">🖼</div>
+      <div style="font-size: 11px; margin-top: 4px; opacity: 0.85;">相册</div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 24px;">📝</div>
+      <div style="font-size: 11px; margin-top: 4px; opacity: 0.85;">输入码</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

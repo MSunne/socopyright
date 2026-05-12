@@ -1,0 +1,60 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 分享卡片预览 #}
+<div style="background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+    <div style="width: 22px; height: 22px; border-radius: 5px; background: linear-gradient(135deg, var(--wx-green), #06ad56); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px;">{{ software_name[:1] }}</div>
+    <span>来自 {{ software_name }}</span>
+    <span style="margin-left: auto;">⋯</span>
+  </div>
+
+  <div style="background: linear-gradient(135deg, var(--wx-green-soft), #f0fdf4); border-radius: 10px; padding: 18px; margin-bottom: 14px;">
+    <div style="font-size: 15px; font-weight: 600; color: var(--m-text); margin-bottom: 8px;">{{ ma_share_title or '【独家福利】兰亭印务会员日 95 折' }}</div>
+    <div style="font-size: 12px; color: var(--m-text-soft); line-height: 1.5; margin-bottom: 12px;">{{ ma_share_subtitle or '11 月 18 日 0:00 - 23:59 全场印刷服务 95 折，会员叠加享 9 折。仅限 24 小时，错过等明年！' }}</div>
+
+    {# 小程序码 + 卡片底图 #}
+    <div style="display: flex; gap: 12px; align-items: flex-end;">
+      <div style="flex:1; padding: 8px 10px; background: rgba(255,255,255,0.7); border-radius: 6px; font-size: 11px;">
+        <div style="color: var(--m-text-muted); margin-bottom: 3px;">长按识别小程序码</div>
+        <div style="font-weight: 600; color: var(--wx-green);">立即领取 →</div>
+      </div>
+      {# 二维码（CSS 模拟） #}
+      <div style="width: 70px; height: 70px; background: #fff; border-radius: 4px; padding: 6px; position: relative;">
+        <div style="width: 100%; height: 100%; background-image:
+          repeating-linear-gradient(0deg, transparent 0 3px, #000 3px 4px),
+          repeating-linear-gradient(90deg, transparent 0 3px, #000 3px 4px); opacity: 0.85;"></div>
+        {# 三个定位点 #}
+        <div style="position: absolute; top: 6px; left: 6px; width: 16px; height: 16px; background: #fff; border: 3px solid #000;"></div>
+        <div style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; background: #fff; border: 3px solid #000;"></div>
+        <div style="position: absolute; bottom: 6px; left: 6px; width: 16px; height: 16px; background: #fff; border: 3px solid #000;"></div>
+        {# 中间小程序 logo #}
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; background: var(--wx-green); border-radius: 3px; color: #fff; font-size: 11px; font-weight: 600; text-align: center; line-height: 18px;">{{ software_name[:1] }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size: 11px; color: var(--m-text-muted);">{{ ma_share_time or '2025-11-12 14:32 生成 · 有效期 7 天' }}</div>
+</div>
+
+{# 分享渠道 #}
+<div style="background: #fff; border-radius: 12px; padding: 16px;">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 14px;">分享到</div>
+  <div class="m-grid-4" style="gap: 14px 0;">
+    {% for c in [
+      {'name':'微信好友','icon':'💬','color':'#07c160'},
+      {'name':'朋友圈','icon':'🌐','color':'#0ea5e9'},
+      {'name':'企业微信','icon':'🏢','color':'#0084ff'},
+      {'name':'微信收藏','icon':'⭐','color':'#f59e0b'},
+      {'name':'保存图片','icon':'💾','color':'#8b5cf6'},
+      {'name':'复制链接','icon':'🔗','color':'#6b7280'},
+      {'name':'生成海报','icon':'🖼','color':'#ec4899'},
+      {'name':'更多','icon':'⋯','color':'#9ca3af'}
+    ] %}
+    <div style="text-align: center;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: {{ c.color }}1a; color: {{ c.color }}; margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 20px;">{{ c.icon }}</div>
+      <div style="font-size: 11px;">{{ c.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

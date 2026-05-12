@@ -1,0 +1,46 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+<div style="padding: 40px 24px 0; text-align: center;">
+  {# 小程序图标 #}
+  <div style="width: 86px; height: 86px; border-radius: 18px; margin: 0 auto 16px; background: linear-gradient(135deg, #07c160, #06ad56); color: #fff; font-size: 38px; font-weight: 700; display:flex; align-items:center; justify-content:center; box-shadow: 0 8px 24px rgba(7,193,96,0.25);">{{ software_name[:1] }}</div>
+  <div style="font-size: 18px; font-weight: 600; color: var(--m-text); margin-bottom: 4px;">{{ software_name }}</div>
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 36px;">{{ slogan or '让业务办理变得简单' }}</div>
+
+  {# 授权弹窗（模拟原生弹窗向上飘） #}
+  <div style="background: #fff; border-radius: 12px 12px 0 0; margin: 0 -24px; padding: 24px 24px 30px; text-align: left; box-shadow: 0 -2px 8px rgba(0,0,0,0.04);">
+    <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 0.5px solid var(--m-divider);">
+      <div style="width: 44px; height: 44px; border-radius: 8px; background: linear-gradient(135deg, #07c160, #06ad56); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600;">{{ software_name[:1] }}</div>
+      <div>
+        <div style="font-size: 14px; font-weight: 600; color: var(--m-text);">{{ software_name }}</div>
+        <div style="font-size: 11px; color: var(--m-text-muted); margin-top: 2px;">申请获取以下权限</div>
+      </div>
+    </div>
+
+    <div style="padding: 14px 0;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #f0f9ff; display: flex; align-items: center; justify-content: center; font-size: 22px;">👤</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; color: var(--m-text); margin-bottom: 2px;">获取你的头像、昵称</div>
+          <div style="font-size: 11px; color: var(--m-text-muted);">用于完善个人资料</div>
+        </div>
+        <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--wx-green-soft); color: var(--wx-green);">必需</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; font-size: 22px;">📱</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; color: var(--m-text); margin-bottom: 2px;">获取你的手机号</div>
+          <div style="font-size: 11px; color: var(--m-text-muted);">便于推送服务通知</div>
+        </div>
+        <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--wx-green-soft); color: var(--wx-green);">必需</span>
+      </div>
+    </div>
+
+    <button style="width: 100%; padding: 12px; background: var(--wx-green); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; margin-top: 8px;">微信授权登录</button>
+    <button style="width: 100%; padding: 12px; background: #f3f4f6; color: var(--m-text); border: none; border-radius: 8px; font-size: 14px; margin-top: 8px;">暂不使用</button>
+
+    <div style="font-size: 11px; color: var(--m-text-muted); text-align: center; margin-top: 16px;">
+      登录即表示同意 <span style="color: var(--wx-green);">《服务协议》</span>《隐私政策》
+    </div>
+  </div>
+</div>
+{% endblock %}

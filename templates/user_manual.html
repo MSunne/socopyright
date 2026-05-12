@@ -46,6 +46,18 @@ th { background: #f3f4f6; font-weight: 600; text-align: left; }
 
 .screenshot { width: 100%; margin: 10pt 0; border: 0.4pt solid #d1d5db; }
 .screenshot-caption { text-align: center; font-size: 9.5pt; color: #6b7280; margin-top: 3pt; margin-bottom: 12pt; }
+/* M4: 移动端截图限宽居中（手机屏本身窄，全宽会失真）—— 290pt ≈ 实际手机大小 */
+.shot-row { text-align: center; }
+.screenshot-pc       { width: 100%; }
+.screenshot-app      { max-width: 290pt; width: 100%; display: block; margin: 10pt auto; }
+.screenshot-miniapp  { max-width: 290pt; width: 100%; display: block; margin: 10pt auto; }
+.platform-tag {
+  display: inline-block; padding: 1pt 5pt; margin-right: 4pt;
+  font-size: 8.5pt; border-radius: 3pt; vertical-align: middle;
+}
+.platform-tag-pc      { background: #eef2ff; color: #3730a3; }
+.platform-tag-app     { background: #ecfdf5; color: #065f46; }
+.platform-tag-miniapp { background: #f0fdf4; color: #14532d; border: 0.4pt solid #15803d; }
 
 .env-table th { width: 28%; }
 .steps li { margin-bottom: 5pt; }
@@ -53,6 +65,7 @@ th { background: #f3f4f6; font-weight: 600; text-align: left; }
 /* 避免标题孤儿 */
 h2, h3, h4 { page-break-after: avoid; }
 table, .screenshot { page-break-inside: avoid; }
+.shot-row { page-break-inside: avoid; }
 </style>
 </head>
 <body>
@@ -149,8 +162,23 @@ table, .screenshot { page-break-inside: avoid; }
 </ol>
 
 <h3>4.2 登录界面示意</h3>
-<img class="screenshot" src="{{ login_png }}" alt="登录页"/>
-<div class="screenshot-caption">图 4-1 系统登录界面</div>
+{# M4: 优先 mobile login（如果有），再 PC login #}
+{% if mobile_login_png %}
+<div class="shot-row shot-{{ mobile_login_platform }}">
+  <img class="screenshot screenshot-{{ mobile_login_platform }}" src="{{ mobile_login_png }}" alt="移动端登录"/>
+  <div class="screenshot-caption">
+    <span class="platform-tag platform-tag-{{ mobile_login_platform }}">{{ {'app':'APP','miniapp':'小程序'}[mobile_login_platform] }}</span>
+    图 4-1 移动端登录 / 授权界面
+  </div>
+</div>
+{% endif %}
+<div class="shot-row shot-pc">
+  <img class="screenshot screenshot-pc" src="{{ login_png }}" alt="PC 登录页"/>
+  <div class="screenshot-caption">
+    <span class="platform-tag platform-tag-pc">PC 端</span>
+    图 4-{{ 2 if mobile_login_png else 1 }} 系统登录界面（PC 端）
+  </div>
+</div>
 
 <h3>4.3 登录异常处理</h3>
 <table>
@@ -169,8 +197,22 @@ table, .screenshot { page-break-inside: avoid; }
 <p>登录成功后进入工作台首页。首页采用经典的三栏布局：左侧为功能导航菜单，上方为面包屑导航和用户信息区，中间主区域展示 KPI 指标卡与待办业务数据列表。</p>
 
 <h3>5.2 首页截图</h3>
-<img class="screenshot" src="{{ home_png }}" alt="首页"/>
-<div class="screenshot-caption">图 5-1 系统首页工作台</div>
+{% if mobile_home_png %}
+<div class="shot-row shot-{{ mobile_home_platform }}">
+  <img class="screenshot screenshot-{{ mobile_home_platform }}" src="{{ mobile_home_png }}" alt="移动端首页"/>
+  <div class="screenshot-caption">
+    <span class="platform-tag platform-tag-{{ mobile_home_platform }}">{{ {'app':'APP','miniapp':'小程序'}[mobile_home_platform] }}</span>
+    图 5-1 移动端首页
+  </div>
+</div>
+{% endif %}
+<div class="shot-row shot-pc">
+  <img class="screenshot screenshot-pc" src="{{ home_png }}" alt="PC 首页"/>
+  <div class="screenshot-caption">
+    <span class="platform-tag platform-tag-pc">PC 端</span>
+    图 5-{{ 2 if mobile_home_png else 1 }} 系统首页工作台（PC 端）
+  </div>
+</div>
 
 <h3>5.3 功能导航说明</h3>
 <p>左侧菜单包含系统的全部一级功能模块，点击任一模块进入对应业务页面。当前登录用户有权限访问的模块以高亮显示，无权限模块将自动隐藏。</p>
@@ -200,8 +242,14 @@ table, .screenshot { page-break-inside: avoid; }
 
 <h4>6.{{ mod_idx }}.2 界面说明</h4>
 {% for shot in m.screenshots %}
-<img class="screenshot" src="{{ shot.img }}" alt="{{ shot.caption }}"/>
-<div class="screenshot-caption">图 6-{{ mod_idx }}.{{ loop.index }} {{ shot.caption }}</div>
+{% set plat = shot.platform or 'pc' %}
+<div class="shot-row shot-{{ plat }}">
+  <img class="screenshot screenshot-{{ plat }}" src="{{ shot.img }}" alt="{{ shot.caption }}"/>
+  <div class="screenshot-caption">
+    <span class="platform-tag platform-tag-{{ plat }}">{{ {'pc':'PC 端','app':'APP','miniapp':'小程序'}[plat] }}</span>
+    图 6-{{ mod_idx }}.{{ loop.index }} {{ shot.caption }}
+  </div>
+</div>
 {% endfor %}
 
 <h4>6.{{ mod_idx }}.3 典型操作流程</h4>

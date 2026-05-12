@@ -1,0 +1,47 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部筛选条 #}
+<div style="display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto;">
+  {% for f in (list_filters or ['全部', '处理中', '已完成', '已驳回']) %}
+  <div style="padding: 5px 12px; border-radius: 14px; font-size: 12px; flex-shrink: 0;
+              {% if loop.index == 1 %}background: var(--m-accent); color: #fff;{% else %}background: #fff; color: var(--m-text-soft); border: 1px solid var(--m-border);{% endif %}">
+    {{ f }}
+  </div>
+  {% endfor %}
+</div>
+
+{# 下拉刷新提示 #}
+<div style="text-align: center; font-size: 11px; color: var(--m-text-muted); padding: 4px 0 12px;">↓ 下拉刷新 · 最后更新 {{ list_updated_at or '5 分钟前' }}</div>
+
+{# 卡片列表 #}
+{% for it in (list_rows or [
+    {'title':'订单 ORD-20251112-001','code':'NO-1142','status':'处理中','badge':'blue','time':'2025-11-12 09:30'},
+    {'title':'订单 ORD-20251112-002','code':'NO-1143','status':'生产中','badge':'blue','time':'2025-11-12 10:15'},
+    {'title':'订单 ORD-20251111-008','code':'NO-1140','status':'待付款','badge':'orange','time':'2025-11-11 17:20'},
+    {'title':'订单 ORD-20251110-022','code':'NO-1138','status':'已完成','badge':'green','time':'2025-11-10 16:00'},
+    {'title':'订单 ORD-20251110-015','code':'NO-1136','status':'已发货','badge':'green','time':'2025-11-10 14:30'},
+    {'title':'订单 ORD-20251109-018','code':'NO-1134','status':'已驳回','badge':'red','time':'2025-11-09 11:00'}
+  ])[:6] %}
+<div class="m-card" style="padding: 14px;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+    <div>
+      <div style="font-size: 14px; font-weight: 600; color: var(--m-text);">{{ it.title }}</div>
+      <div style="font-size: 11px; color: var(--m-text-muted); margin-top: 2px;">{{ it.code or 'NO-' ~ ('%04d' | format(loop.index)) }}</div>
+    </div>
+    <span class="m-badge {{ it.badge or 'blue' }}">{{ it.status or '处理中' }}</span>
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 12px; margin-bottom: 10px;">
+    {% for kv in (it.fields or [{'k': '负责人', 'v': '张三'}, {'k': '类型', 'v': '常规'}, {'k': '优先级', 'v': '高'}, {'k': '截止', 'v': '2025-11-30'}]) %}
+    <div><span style="color: var(--m-text-muted);">{{ kv.k }}：</span><span style="color: var(--m-text);">{{ kv.v }}</span></div>
+    {% endfor %}
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 0.5px solid var(--m-divider);">
+    <div style="font-size: 11px; color: var(--m-text-muted);">{{ it.time or '2025-11-12 09:30' }}</div>
+    <div style="font-size: 12px; color: var(--m-accent);">详情 ›</div>
+  </div>
+</div>
+{% endfor %}
+
+{# 浮动新建按钮 #}
+<div class="m-btn-fab">+</div>
+{% endblock %}

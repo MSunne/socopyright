@@ -1,0 +1,74 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 顶部状态 tabs #}
+<div style="background: #fff; margin: -12px -14px 12px; padding: 12px 14px 0; position: sticky; top: 0;">
+  <div style="display: flex; justify-content: space-between; padding-bottom: 12px;">
+    {% for t in (ma_order_tabs or [
+      {'n':'全部','c':0,'sel':true},
+      {'n':'待付款','c':2,'sel':false},
+      {'n':'待发货','c':3,'sel':false},
+      {'n':'待收货','c':1,'sel':false},
+      {'n':'已完成','c':0,'sel':false}
+    ]) %}
+    <div style="text-align: center; flex: 1;">
+      <div style="font-size: 13px; padding: 4px 0; position: relative;
+                  {% if t.sel %}color: var(--wx-green); font-weight: 600;
+                  {% else %}color: var(--m-text-soft);{% endif %}">
+        {{ t.n }}
+        {% if t.c %}<div style="position: absolute; top: 0; right: 30%; min-width: 14px; height: 14px; line-height: 14px; padding: 0 3px; background: #ef4444; color: #fff; border-radius: 7px; font-size: 9px; text-align: center; transform: translateX(50%);">{{ t.c }}</div>{% endif %}
+        {% if t.sel %}<div style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 30%; height: 2px; background: var(--wx-green); border-radius: 2px;"></div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 订单卡片 #}
+{% for o in (ma_orders or [
+  {'shop':'武汉兰亭印务','order_no':'ORD-20251112-0018','status':'待付款','status_color':'#dc2626',
+   'items':[{'icon':'📋','title':'PS 版印刷 10 万张 · 80g','sub':'数量 1','price':'25,800'}],
+   'total':'25,800','count':1,'time':'剩余 23:42:08 自动取消',
+   'actions':['取消订单','立即付款']},
+  {'shop':'武汉兰亭印务','order_no':'ORD-20251110-0234','status':'生产中','status_color':'#3b82f6',
+   'items':[{'icon':'🎨','title':'数字打样 · 高保真色样','sub':'数量 3','price':'1,140'}],
+   'total':'1,140','count':1,'time':'预计 11-15 出货',
+   'actions':['查看物流','申请售后']},
+  {'shop':'武汉兰亭印务','order_no':'ORD-20251108-0156','status':'已发货','status_color':'#10b981',
+   'items':[{'icon':'📦','title':'装订服务 · 骑马钉','sub':'数量 500 本','price':'425'},{'icon':'✨','title':'装饰加工 · 烫金','sub':'数量 500','price':'340'}],
+   'total':'765','count':2,'time':'顺丰快递 SF1234567890',
+   'actions':['查看物流','确认收货']}
+]) %}
+<div style="background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="font-size: 12px; color: var(--m-text);"><b>{{ o.shop }}</b></span>
+    <span style="font-size: 12px; color: {{ o.status_color }}; font-weight: 600;">{{ o.status }}</span>
+  </div>
+  {% for it in o['items'] %}
+  <div style="display: flex; gap: 10px; padding: 8px 0;">
+    <div style="width: 60px; height: 60px; border-radius: 6px; background: var(--wx-green-soft); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">{{ it.icon }}</div>
+    <div style="flex:1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 13px; color: var(--m-text);">{{ it.title }}</div>
+        <div style="font-size: 11px; color: var(--m-text-muted); margin-top: 2px;">{{ it.sub }}</div>
+      </div>
+    </div>
+    <div style="text-align: right; font-size: 13px; font-weight: 600; color: var(--m-text);">¥{{ it.price }}</div>
+  </div>
+  {% endfor %}
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 0.5px solid var(--m-divider); font-size: 12px;">
+    <span style="color: var(--m-text-muted);">{{ o.time }}</span>
+    <div>
+      <span style="color: var(--m-text-muted);">共 {{ o.count }} 件，合计</span>
+      <span style="color: #dc2626; font-weight: 700; font-size: 14px;">¥{{ o.total }}</span>
+    </div>
+  </div>
+  <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+    {% for a in o.actions %}
+    <button style="padding: 5px 14px; font-size: 12px; border-radius: 14px;
+                   {% if loop.last %}background: var(--wx-green); color: #fff; border: none;
+                   {% else %}background: #fff; color: var(--m-text-soft); border: 1px solid var(--m-border);{% endif %}">{{ a }}</button>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

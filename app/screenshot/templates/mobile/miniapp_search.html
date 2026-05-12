@@ -1,0 +1,75 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 搜索栏 #}
+<div style="background: #fff; padding: 12px 14px; margin: -12px -14px 12px; border-bottom: 0.5px solid var(--m-border); display: flex; gap: 10px; align-items: center;">
+  <div style="flex:1; display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #f3f4f6; border-radius: 8px;">
+    <span style="color: var(--m-text-muted);">🔍</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">{{ ma_search_kw or '兰亭印刷服务' }}</span>
+    <span style="color: var(--m-text-muted); font-size: 13px;">✕</span>
+  </div>
+  <button style="background: none; border: none; color: var(--wx-green); font-size: 14px; padding: 0 4px;">取消</button>
+</div>
+
+{# 实时联想 #}
+<div class="m-card" style="padding: 0; overflow: hidden;">
+  {% for s in (ma_search_sug or [
+    '兰亭印刷服务',
+    '兰亭印刷服务 PS 版',
+    '兰亭印刷服务 优惠',
+    '兰亭印刷服务 加急',
+    '兰亭印刷服务 报价'
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="color: var(--m-text-muted); font-size: 13px;">{% if loop.index == 1 %}🕐{% else %}🔍{% endif %}</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">{{ s }}</span>
+    <span style="font-size: 18px; color: var(--m-text-muted);">↗</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 历史搜索 #}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <div style="font-size: 13px; font-weight: 600;">最近搜索</div>
+    <span style="font-size: 11px; color: var(--m-text-muted);">🗑 清空</span>
+  </div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    {% for h in (ma_search_history or ['色样打样', '专色印刷', '装订报价', '加急服务', 'PS 版 1 万张', '环保油墨', '会员折扣']) %}
+    <span style="padding: 5px 12px; background: #f3f4f6; color: var(--m-text); border-radius: 14px; font-size: 12px;">{{ h }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+{# 热门搜索 #}
+<div class="m-card">
+  <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 12px;">
+    <span style="font-size: 13px; font-weight: 600;">🔥 热门搜索</span>
+    <span style="font-size: 11px; color: var(--m-text-muted);">· 实时更新</span>
+  </div>
+  {% for h in (ma_search_hot or [
+    {'word':'双 12 印刷优惠','tag':'活动','sub':'128.5k 热度'},
+    {'word':'数字打样 当日交付','tag':'快速','sub':'95.6k 热度'},
+    {'word':'环保水性油墨','tag':'新',  'sub':'82.3k 热度'},
+    {'word':'PS 版印刷套餐','tag':'',    'sub':'65.2k 热度'},
+    {'word':'会员日 95 折','tag':'热',  'sub':'58.6k 热度'},
+    {'word':'季度结算客户','tag':'',    'sub':'42.8k 热度'}
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 18px; height: 18px; border-radius: 4px; background: {% if loop.index <= 3 %}#dc2626{% else %}#9ca3af{% endif %}; color: #fff; text-align: center; line-height: 18px; font-size: 10px; font-weight: 600;">{{ loop.index }}</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">{{ h.word }}</span>
+    {% if h.tag %}<span style="font-size: 9px; padding: 1px 4px; background: #ef4444; color: #fff; border-radius: 2px;">{{ h.tag }}</span>{% endif %}
+    <span style="font-size: 10px; color: var(--m-text-muted);">{{ h.sub }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 发现 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">发现 · 您可能感兴趣</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    {% for d in ['新品上架', '会员专享', '工艺百科', '附近门店'] %}
+    <div style="padding: 14px 10px; background: linear-gradient(135deg, var(--wx-green-soft), #d1fae5); border-radius: 8px; text-align: center; font-size: 13px; color: var(--m-text);">{{ d }}</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

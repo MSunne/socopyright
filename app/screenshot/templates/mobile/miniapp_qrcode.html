@@ -1,0 +1,74 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 扫码成功结果展示 #}
+<div class="m-card" style="text-align: center; padding: 22px 14px;">
+  <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--wx-green-soft); display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 14px;">✓</div>
+  <div style="font-size: 16px; font-weight: 600; color: var(--m-text);">{{ ma_qr_title or '扫码成功' }}</div>
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-top: 6px;">{{ ma_qr_sub or '已识别设备：印刷机 P-03' }}</div>
+</div>
+
+{# 设备/资产信息 #}
+<div class="m-card">
+  <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 56px; height: 56px; border-radius: 10px; background: linear-gradient(135deg, var(--wx-green-soft), #d1fae5); display: flex; align-items: center; justify-content: center; font-size: 26px;">🖨</div>
+    <div style="flex:1;">
+      <div style="font-size: 14px; font-weight: 600;">{{ ma_qr_asset_name or '印刷机 P-03' }}</div>
+      <div style="font-size: 11px; color: var(--m-text-muted); margin-top: 2px;">{{ ma_qr_asset_id or '资产编号：ASSET-2023-A0103' }}</div>
+    </div>
+    <span class="m-badge green">在线</span>
+  </div>
+  <div style="padding-top: 12px;">
+    {% for kv in (ma_qr_kvs or [
+      {'k':'设备型号','v':'HEIDELBERG XL 105'},
+      {'k':'所在位置','v':'武昌厂区 · 1 号车间 · A 区'},
+      {'k':'当前状态','v':'生产中 · 利用率 92%'},
+      {'k':'累计运行','v':'18,256 小时'},
+      {'k':'下次保养','v':'2025-11-25（剩 13 天）'},
+      {'k':'负责人','v':'李工长 · 138 0013 8888'}
+    ]) %}
+    <div style="display: flex; padding: 6px 0; font-size: 12px; border-bottom: 0.5px solid var(--m-divider);">
+      <span style="width: 80px; color: var(--m-text-muted);">{{ kv.k }}</span>
+      <span style="flex:1; color: var(--m-text);">{{ kv.v }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 快捷操作 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">{{ ma_qr_action_title or '请选择您要进行的操作' }}</div>
+  <div class="m-grid-3" style="gap: 10px;">
+    {% for a in (ma_qr_actions or [
+      {'icon':'🔧','name':'报修','color':'#ef4444'},
+      {'icon':'📋','name':'巡检','color':'#3b82f6'},
+      {'icon':'⏰','name':'保养','color':'#f59e0b'},
+      {'icon':'📊','name':'查看数据','color':'#10b981'},
+      {'icon':'📷','name':'拍照取证','color':'#8b5cf6'},
+      {'icon':'📑','name':'操作手册','color':'#06b6d4'}
+    ]) %}
+    <div style="text-align: center; padding: 14px 6px; border-radius: 10px; background: {{ a.color }}1a;">
+      <div style="font-size: 24px; margin-bottom: 6px;">{{ a.icon }}</div>
+      <div style="font-size: 12px; color: {{ a.color }}; font-weight: 600;">{{ a.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 最近活动 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">最近活动</div>
+  {% for ev in (ma_qr_events or [
+    {'time':'今天 09:30','user':'李工长','action':'完成班前点检','icon':'✓','color':'#10b981'},
+    {'time':'昨天 17:20','user':'刘机修','action':'更换墨辊轴承','icon':'🔧','color':'#3b82f6'},
+    {'time':'11-10 14:00','user':'王质检','action':'季度校准','icon':'📐','color':'#f59e0b'}
+  ]) %}
+  <div style="display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--m-divider); align-items: center;">
+    <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ ev.color }}1a; color: {{ ev.color }}; display: flex; align-items: center; justify-content: center; font-size: 14px;">{{ ev.icon }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 12px; color: var(--m-text);">{{ ev.user }} · {{ ev.action }}</div>
+      <div style="font-size: 10px; color: var(--m-text-muted); margin-top: 1px;">{{ ev.time }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

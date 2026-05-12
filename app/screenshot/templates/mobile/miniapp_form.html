@@ -1,0 +1,69 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 表单分组 1 #}
+<div style="background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">基本信息</div>
+
+  <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px; color: var(--m-text);">姓名 <span style="color:#dc2626;">*</span></span>
+    <input class="m-input" value="{{ ma_form_name or '张先生' }}" style="border: none; padding: 0; flex:1; font-size: 13px;"/>
+  </div>
+  <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px; color: var(--m-text);">手机号 <span style="color:#dc2626;">*</span></span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">138 ****8888</span>
+    <span style="font-size: 11px; color: var(--wx-green);">已验证</span>
+  </div>
+  <div style="display: flex; align-items: center; padding: 10px 0;">
+    <span style="width: 80px; font-size: 13px; color: var(--m-text);">所在公司</span>
+    <input class="m-input" value="{{ ma_form_company or '武汉兰亭印务有限公司' }}" style="border: none; padding: 0; flex:1; font-size: 13px;"/>
+  </div>
+</div>
+
+{# 业务选择 #}
+<div style="background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">业务详情</div>
+
+  <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px;">业务类型</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">PS 版印刷</span>
+    <span style="color: var(--m-text-muted);">›</span>
+  </div>
+  <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px;">数量规格</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">10 万张 / 80g 铜版纸</span>
+    <span style="color: var(--m-text-muted);">›</span>
+  </div>
+  <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px;">期望交付</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">2025-11-25</span>
+    <span style="color: var(--m-text-muted);">📅</span>
+  </div>
+  <div style="padding: 10px 0;">
+    <div style="font-size: 13px; margin-bottom: 8px;">特殊要求 <span style="font-size: 11px; color: var(--m-text-muted);">（选填）</span></div>
+    <textarea class="m-textarea" style="border: 1px solid var(--m-border); font-size: 13px;">{{ ma_form_note or '需要使用环保水性油墨，色差控制 ΔE ≤ 1.5' }}</textarea>
+  </div>
+</div>
+
+{# 附件 #}
+<div style="background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 10px;">设计稿（最多上传 9 张）</div>
+  <div style="display: flex; gap: 8px;">
+    <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--wx-green-soft), #f0fdf4); border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size: 24px;">📄</div>
+    <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--wx-green-soft), #f0fdf4); border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size: 24px;">📷</div>
+    <div style="width: 70px; height: 70px; background: #f9fafb; border: 1.5px dashed #d1d5db; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size: 22px; color: var(--m-text-muted);">+</div>
+  </div>
+</div>
+
+{# 协议勾选 #}
+<div style="padding: 14px 4px;">
+  <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--m-text-soft);">
+    <span style="display:inline-block; width:14px; height:14px; border-radius: 3px; background: var(--wx-green); color: #fff; text-align: center; line-height: 11px; font-size: 10px;">✓</span>
+    <span>我已阅读并同意 <span style="color: var(--wx-green);">《服务协议》</span> 和 <span style="color: var(--wx-green);">《隐私政策》</span></span>
+  </div>
+</div>
+
+{# 底部提交 #}
+<div style="position: fixed; left: 0; right: 0; bottom: 50px; background: #fff; padding: 10px 14px;">
+  <button style="width: 100%; padding: 12px; background: var(--wx-green); color: #fff; border: none; border-radius: 22px; font-size: 15px; font-weight: 600;">提交（预计费用 ¥25,800）</button>
+</div>
+{% endblock %}

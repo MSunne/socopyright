@@ -1,0 +1,78 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 商品大图区 #}
+<div style="margin: -12px -14px 12px; height: 280px; background: linear-gradient(135deg, var(--wx-green-soft), #f0fdf4); position: relative; display: flex; align-items: center; justify-content: center;">
+  <div style="font-size: 80px;">{{ ma_detail_icon or '📋' }}</div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 14px; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); color: #fff; font-size: 12px; display: flex; justify-content: space-between;">
+    <span>1 / 5</span>
+    <span>{{ ma_detail_views or '已被 2,348 人浏览' }}</span>
+  </div>
+</div>
+
+{# 价格 #}
+<div style="background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 12px;">
+  <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px;">
+    <span style="font-size: 12px; color: #dc2626; transform: translateY(-3px);">¥</span>
+    <span style="font-size: 28px; font-weight: 700; color: #dc2626;">{{ ma_detail_price or '2,580' }}</span>
+    <span style="font-size: 12px; color: var(--m-text-muted); text-decoration: line-through;">¥{{ ma_detail_old_price or '2,890' }}</span>
+    <span style="margin-left: auto; font-size: 11px; padding: 2px 6px; background: #fef3c7; color: #92400e; border-radius: 4px;">会员价 ¥2,250</span>
+  </div>
+  <div style="font-size: 15px; font-weight: 600; color: var(--m-text); margin-bottom: 6px;">{{ ma_detail_title or '兰亭 PS 版印刷 · 标准 4 色 · 1 万张起' }}</div>
+  <div style="font-size: 11px; color: var(--m-text-muted);">{{ ma_detail_sub or '满 5000 减 200 · 顺丰包邮 · 7 工作日交付' }}</div>
+</div>
+
+{# 规格选项 #}
+<div style="background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 12px;">
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 8px;">规格</div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+    {% for s in ['1 万张', '5 万张', '10 万张', '20 万张'] %}
+    <div style="padding: 6px 14px; border-radius: 14px; font-size: 12px;
+                {% if loop.index == 2 %}background: var(--wx-green-soft); color: var(--wx-green); border: 1px solid var(--wx-green);
+                {% else %}background: #f3f4f6; color: var(--m-text-soft); border: 1px solid transparent;{% endif %}">{{ s }}</div>
+    {% endfor %}
+  </div>
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 8px;">交付方式</div>
+  <div style="display: flex; gap: 8px;">
+    {% for s in ['标准 7 工作日', '加急 3 工作日 (+15%)', '极速 24 小时 (+30%)'] %}
+    <div style="padding: 6px 12px; border-radius: 14px; font-size: 11px;
+                {% if loop.index == 1 %}background: var(--wx-green-soft); color: var(--wx-green); border: 1px solid var(--wx-green);
+                {% else %}background: #f3f4f6; color: var(--m-text-soft);{% endif %}">{{ s }}</div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 服务承诺 #}
+<div style="background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 12px;">
+  <div style="font-size: 12px; color: var(--m-text-muted); margin-bottom: 10px;">服务承诺</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+    {% for it in ['✓ 7 天质量保障', '✓ 不达标包退', '✓ 顺丰包邮', '✓ 发票即开即得'] %}
+    <div style="color: var(--m-text-soft);">{{ it }}</div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 商品详情图 #}
+<div style="background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 80px;">
+  <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">详情</div>
+  <div style="font-size: 13px; color: var(--m-text); line-height: 1.7;">{{ ma_detail_narrative or '采用进口 PS 版基材，4 色单面印刷，纸张克重 80g - 300g 可选。生产周期 7 工作日（标准）。色差控制在 ΔE ≤ 1.5。支持专色调配（Pantone 体系）。出厂前 100% 抽检，质量不达标全额退款。' }}</div>
+  <div style="margin-top: 14px; height: 100px; background: linear-gradient(135deg, #f3f4f6, #e5e7eb); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--m-text-muted); font-size: 11px;">[ 工艺流程图 - 6 步示意 ]</div>
+</div>
+
+{# 底部操作栏 #}
+<div style="position: fixed; left: 0; right: 0; bottom: 50px; background: #fff; border-top: 0.5px solid var(--m-border); padding: 10px 14px; display: flex; gap: 8px; align-items: center;">
+  <div style="text-align: center;">
+    <div style="font-size: 18px;">⭐</div>
+    <div style="font-size: 9px; color: var(--m-text-muted);">收藏</div>
+  </div>
+  <div style="text-align: center; margin-left: 8px;">
+    <div style="font-size: 18px;">💬</div>
+    <div style="font-size: 9px; color: var(--m-text-muted);">客服</div>
+  </div>
+  <div style="text-align: center; margin: 0 8px;">
+    <div style="font-size: 18px;">🛒</div>
+    <div style="font-size: 9px; color: var(--m-text-muted);">购物车</div>
+  </div>
+  <button style="flex:1; padding: 10px; background: #f59e0b; color: #fff; border: none; border-radius: 22px 0 0 22px; font-size: 13px; font-weight: 600;">加购物车</button>
+  <button style="flex:1; padding: 10px; background: var(--wx-green); color: #fff; border: none; border-radius: 0 22px 22px 0; font-size: 13px; font-weight: 600;">立即购买</button>
+</div>
+{% endblock %}

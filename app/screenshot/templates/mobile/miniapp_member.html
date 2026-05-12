@@ -1,0 +1,79 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 顶部会员卡 #}
+<div style="background: linear-gradient(135deg, #2d3748, #1a202c); border-radius: 14px; padding: 18px; color: #fff; margin-bottom: 14px; position: relative; overflow: hidden;">
+  <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(251, 191, 36, 0.1);"></div>
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; display:flex; align-items:center; justify-content:center; font-size: 18px; font-weight: 600;">{{ avatar_char }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 15px; font-weight: 600; margin-bottom: 2px;">{{ op_user }}</div>
+      <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 10px; font-size: 10px; font-weight: 600;">
+        <span>👑</span>{{ ma_member_level or '黄金会员' }}
+      </div>
+    </div>
+    <div style="font-size: 12px; opacity: 0.85;">查看权益 ›</div>
+  </div>
+
+  {# 等级进度 #}
+  <div style="font-size: 11px; opacity: 0.85; margin-bottom: 6px;">
+    距离 <b style="color: #fbbf24;">铂金会员</b> 还需 <b style="color: #fbbf24;">¥2,580</b> 消费
+  </div>
+  <div style="height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden;">
+    <div style="height: 100%; width: 68%; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 3px;"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 9px; opacity: 0.7; margin-top: 4px;">
+    <span>普通</span><span>白银</span><span>黄金</span><span>铂金</span><span>钻石</span>
+  </div>
+</div>
+
+{# 积分 + 资产 #}
+<div class="m-grid-3" style="margin-bottom: 14px;">
+  {% for v in (ma_member_assets or [
+    {'num':'8,628','lbl':'积分','color':'#f59e0b'},
+    {'num':'12','lbl':'卡券','color':'#ef4444'},
+    {'num':'¥1,288','lbl':'余额','color':'#10b981'}
+  ]) %}
+  <div class="m-card" style="text-align: center; padding: 14px 0; margin: 0;">
+    <div style="font-size: 18px; font-weight: 700; color: {{ v.color }};">{{ v.num }}</div>
+    <div style="font-size: 11px; color: var(--m-text-muted); margin-top: 4px;">{{ v.lbl }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+{# 专属特权 #}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+    <div style="font-size: 14px; font-weight: 600;">黄金会员专享特权</div>
+    <span style="font-size: 11px; color: var(--m-text-muted);">查看更多 ›</span>
+  </div>
+  <div class="m-grid-4" style="gap: 14px 0;">
+    {% for p in (ma_member_perks or [
+      {'icon':'🎁','name':'生日礼券','sub':'¥200'},
+      {'icon':'⚡','name':'加急通道','sub':'缩短 30%'},
+      {'icon':'🚚','name':'免运费','sub':'全国包邮'},
+      {'icon':'💎','name':'专属客服','sub':'7x24h'},
+      {'icon':'🏷','name':'专享折扣','sub':'8.5 折起'},
+      {'icon':'🎊','name':'积分翻倍','sub':'1.5x'},
+      {'icon':'🎟','name':'活动优先','sub':'抢先购'},
+      {'icon':'📞','name':'电话回访','sub':'季度 1 次'}
+    ]) %}
+    <div style="text-align: center;">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--wx-green-soft), #d1fae5); color: var(--wx-green); margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 22px;">{{ p.icon }}</div>
+      <div style="font-size: 11px; color: var(--m-text);">{{ p.name }}</div>
+      <div style="font-size: 9px; color: var(--m-text-muted); margin-top: 2px;">{{ p.sub }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 积分商城入口 #}
+<div class="m-card" style="background: linear-gradient(135deg, #fef3c7, #fff); border: 1px solid #fbbf24;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 4px;">🎁 积分商城</div>
+      <div style="font-size: 11px; color: #b45309;">您的 8,628 分可兑换 12 件好礼</div>
+    </div>
+    <button style="padding: 6px 14px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; border: none; border-radius: 14px; font-size: 12px;">立即兑换</button>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{# 微信小程序骨架。特色：顶部胶囊、底 4 tabbar、微信主题 #07c160 #}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>{{ software_name }} 小程序{% if page_title %} - {{ page_title }}{% endif %}</title>
+<style>{{ mobile_css }}</style>
+{% block head_extra %}{% endblock %}
+</head>
+<body class="mobile-miniapp {{ body_classes }}">
+
+{% if not is_login %}
+<div class="wx-statusbar">
+  <span>9:41</span>
+  <div class="wx-capsule">
+    <span>⊝</span><span class="sep"></span><span>⋯</span>
+  </div>
+</div>
+{% if ma_title or page_title %}
+<div class="ma-header">{{ ma_title or page_title or module_title or software_name }}</div>
+{% endif %}
+<main class="ma-main">
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if not is_login %}
+</main>
+{% if mobile_tabs %}
+<nav class="ma-tabbar">
+  {% for tab in mobile_tabs %}
+  <div class="tab-item {% if tab.active %}active{% endif %}">
+    <div class="tab-icon">{{ tab.icon or '●' }}</div>
+    <div class="tab-label">{{ tab.name }}</div>
+  </div>
+  {% endfor %}
+</nav>
+{% endif %}
+{% endif %}
+
+<div class="global-water">© {{ year }} {{ company_name }} · 小程序</div>
+
+</body>
+</html>

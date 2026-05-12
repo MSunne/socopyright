@@ -1,0 +1,75 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部用户卡 #}
+<div class="m-card" style="background: linear-gradient(135deg, var(--m-accent), var(--m-dark)); color: #fff; padding: 18px;">
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size: 18px; font-weight: 600;">{{ avatar_char }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 16px; font-weight: 600;">{{ op_user }}</div>
+      <div style="font-size: 12px; opacity: 0.85;">{{ user_role or '业务管理员' }} · 工号 {{ user_no or 'A2401' }}</div>
+    </div>
+    <div style="font-size: 12px; opacity: 0.85;">›</div>
+  </div>
+  {% if home_metrics %}
+  <div class="m-grid-4" style="margin-top: 14px;">
+    {% for m in home_metrics[:4] %}
+    <div style="text-align: center;">
+      <div style="font-size: 18px; font-weight: 700;">{{ m.value }}</div>
+      <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">{{ m.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{# 服务区（9 宫格） #}
+<div class="m-card" style="padding: 16px 10px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 6px;">
+    <div style="font-size: 15px; font-weight: 600;">常用服务</div>
+    <div style="font-size: 12px; color: var(--m-text-muted);">编辑</div>
+  </div>
+  <div class="m-grid-4" style="gap: 14px 0;">
+    {% for s in (home_services or [
+        {'icon':'📋','name':'快速下单'},
+        {'icon':'📦','name':'我的订单'},
+        {'icon':'🔍','name':'扫码查询'},
+        {'icon':'⚡','name':'紧急工单'},
+        {'icon':'📊','name':'数据看板'},
+        {'icon':'💬','name':'消息中心'},
+        {'icon':'⭐','name':'我的收藏'},
+        {'icon':'⋯','name':'更多'}
+      ])[:8] %}
+    <div style="text-align: center;">
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--m-accent-soft); color: var(--m-accent); margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 18px;">{{ s.icon or '●' }}</div>
+      <div style="font-size: 11px; color: var(--m-text);">{{ s.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 待办信息流 #}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <div style="font-size: 15px; font-weight: 600;">今日待办</div>
+    <div style="font-size: 12px; color: var(--m-accent);">全部 ›</div>
+  </div>
+  {% for it in (home_feed or [
+      {'title':'工单 WO-1142 待审核','sub':'李工长 提交 · 工艺路线变更','status':'待处理','badge':'orange','time':'09:42'},
+      {'title':'设备 P-03 告警','sub':'轴承振动超阈值，请巡检','status':'紧急','badge':'red','time':'08:15'},
+      {'title':'紧急插单审批','sub':'XX 客户加急订单 200 套','status':'待审批','badge':'blue','time':'昨天'},
+      {'title':'季度产能报告','sub':'本季 OEE 提升 3.2%','status':'已完成','badge':'green','time':'昨天'}
+    ])[:4] %}
+  <div class="m-row">
+    <div class="row-avatar">{{ loop.index }}</div>
+    <div class="row-main">
+      <div class="row-title">{{ it.title }}</div>
+      <div class="row-sub">{{ it.sub }}</div>
+    </div>
+    <div class="row-right">
+      <span class="m-badge {{ it.badge or 'blue' }}">{{ it.status or '待处理' }}</span>
+      <div style="margin-top: 4px; color: var(--m-text-muted);">{{ it.time or '10:30' }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{# APP 原生（iOS 风格）骨架。
+  context:
+    software_name, module_title, page_title,
+    op_user, avatar_char,
+    mobile_css (注入的 _mobile.css 内容),
+    body_classes (e.g. "mobile-app radius-12 font-pingfang"),
+    mobile_tabs (list of {name, icon, active}),
+    company_name, year,
+    is_login: True → 不渲染 statusbar/nav/tabbar，全屏内容
+#}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>{{ software_name }}{% if page_title %} - {{ page_title }}{% endif %}</title>
+<style>{{ mobile_css }}</style>
+{% block head_extra %}{% endblock %}
+</head>
+<body class="mobile-app {{ body_classes }}">
+
+{% if not is_login %}
+{# 标准 APP 布局头部 #}
+<div class="ios-statusbar">
+  <span>9:41</span>
+  <span class="ios-status-icons">●●●● <span style="margin-left:4px;">5G</span> <span style="margin-left:6px;">100%</span></span>
+</div>
+<div class="app-nav">
+  <span class="app-nav-back">{% if show_back %}‹{% endif %}</span>
+  <span class="app-nav-title">{{ page_title or module_title or software_name }}</span>
+  <span class="app-nav-right">⋯</span>
+</div>
+<main class="app-main">
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if not is_login %}
+</main>
+{% if mobile_tabs %}
+<nav class="app-tabbar">
+  {% for tab in mobile_tabs %}
+  <div class="tab-item {% if tab.active %}active{% endif %}">
+    <div class="tab-icon">{{ tab.icon or '●' }}</div>
+    <div class="tab-label">{{ tab.name }}</div>
+  </div>
+  {% endfor %}
+</nav>
+{% endif %}
+{% endif %}
+
+{# 全局水印 #}
+<div class="global-water">© {{ year }} {{ company_name }}</div>
+
+</body>
+</html>

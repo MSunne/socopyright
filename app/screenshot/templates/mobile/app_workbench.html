@@ -1,0 +1,76 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{# 数据驾驶舱风格的"工作台"——区别于 app_home 的轻量入口 #}
+{% block content %}
+{# 顶部 banner：今日核心指标 #}
+<div class="m-card" style="background: linear-gradient(135deg, var(--m-dark), var(--m-dark2)); color: #fff; padding: 18px;">
+  <div style="font-size: 12px; opacity: 0.85; margin-bottom: 6px;">{{ wb_banner_label or '今日核心指标' }} · 实时</div>
+  <div style="font-size: 30px; font-weight: 700; margin-bottom: 4px;">{{ wb_banner_num or '12,856' }}</div>
+  <div style="font-size: 12px; opacity: 0.9;">{{ wb_banner_sub or '本月累计产量（套），完成度 84.2%' }}</div>
+  <div style="margin-top: 12px; height: 30px; position: relative;">
+    {# mini trend 折线 #}
+    <svg viewBox="0 0 300 30" style="width: 100%; height: 30px;" preserveAspectRatio="none">
+      <polyline points="0,25 30,20 60,22 90,15 120,18 150,10 180,14 210,8 240,12 270,6 300,4"
+                fill="none" stroke="#fff" stroke-width="1.5" opacity="0.7"/>
+    </svg>
+  </div>
+</div>
+
+{# 4 个 KPI 区块 #}
+<div class="m-grid-2" style="margin-bottom: 12px;">
+  {% for k in (wb_kpis or [
+    {'lbl':'良品率','num':'98.2%','trend':'↑0.3%','color':'#10b981'},
+    {'lbl':'OEE 综合','num':'76.4%','trend':'↑2.1%','color':'#3b82f6'},
+    {'lbl':'订单数','num':'342','trend':'↑8','color':'#f59e0b'},
+    {'lbl':'平均耗时','num':'4.8 时','trend':'↓0.5','color':'#8b5cf6'}
+  ]) %}
+  <div class="m-card" style="padding: 12px; border-left: 3px solid {{ k.color }};">
+    <div style="font-size: 11px; color: var(--m-text-muted); margin-bottom: 4px;">{{ k.lbl }}</div>
+    <div style="font-size: 22px; font-weight: 700; color: var(--m-text);">{{ k.num }}</div>
+    <div style="font-size: 11px; color: {{ k.color }}; margin-top: 2px;">{{ k.trend }} 环比</div>
+  </div>
+  {% endfor %}
+</div>
+
+{# 设备状态 #}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <div style="font-size: 14px; font-weight: 600;">{{ wb_section_2 or '设备状态' }}</div>
+    <div style="font-size: 12px; color: var(--m-accent);">全部 ›</div>
+  </div>
+  {% for d in (wb_devices or [
+    {'name':'P-01 印刷机','status':'生产中','util':'92%','color':'#10b981'},
+    {'name':'P-03 印刷机','status':'告警','util':'78%','color':'#ef4444'},
+    {'name':'P-05 印刷机','status':'生产中','util':'85%','color':'#10b981'},
+    {'name':'B-01 装订机','status':'保养中','util':'0%','color':'#9ca3af'}
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ d.color }}; flex-shrink: 0;"></div>
+    <span style="flex:1; font-size: 13px;">{{ d.name }}</span>
+    <span style="font-size: 11px; color: var(--m-text-muted); margin-right: 8px;">{{ d.status }}</span>
+    <span style="font-size: 13px; font-weight: 600; color: {{ d.color }};">{{ d.util }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 班组排行 #}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <div style="font-size: 14px; font-weight: 600;">{{ wb_section_3 or '班组绩效（本周）' }}</div>
+    <span style="font-size: 11px; color: var(--m-text-muted);">按完成率</span>
+  </div>
+  {% for r in (wb_rank or [
+    {'rk':1,'name':'A 班（李工长）','val':'126.4%','color':'#fbbf24'},
+    {'rk':2,'name':'C 班（赵班长）','val':'118.2%','color':'#9ca3af'},
+    {'rk':3,'name':'B 班（王班长）','val':'102.8%','color':'#cd7f32'},
+    {'rk':4,'name':'D 班（陈班长）','val':'89.5%','color':'#9ca3af'}
+  ]) %}
+  <div class="m-row" style="border-bottom: 0.5px solid var(--m-divider);">
+    <div class="row-avatar" style="background: {{ r.color }}; color: #fff;">{{ r.rk }}</div>
+    <div class="row-main">
+      <div class="row-title">{{ r.name }}</div>
+    </div>
+    <div class="row-right" style="color: var(--m-text); font-weight: 600;">{{ r.val }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

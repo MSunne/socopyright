@@ -1,0 +1,49 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 顶部筛选 tabs #}
+<div style="background: #fff; padding: 10px 12px 0; margin: -12px -14px 12px;">
+  <div style="display: flex; gap: 18px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">
+    {% for t in (ma_list_tabs or ['推荐', '热卖', '新品', '优惠', '会员专享']) %}
+    <div style="font-size: 13px; padding: 4px 0;
+                {% if loop.index == 1 %}color: var(--wx-green); font-weight: 600; border-bottom: 2px solid var(--wx-green);
+                {% else %}color: var(--m-text-soft);{% endif %}">{{ t }}</div>
+    {% endfor %}
+  </div>
+  <div style="display: flex; align-items: center; gap: 14px; padding: 8px 0; font-size: 12px; color: var(--m-text-soft);">
+    <span>综合 ↓</span>
+    <span>销量</span>
+    <span>价格 ↑↓</span>
+    <span style="margin-left: auto;">⫮ 筛选</span>
+  </div>
+</div>
+
+{# 列表 #}
+{% for it in (ma_list_items or [
+  {'title':'PS 版印刷 - 标准 4 色','price':'2,580','old_price':'2,890','desc':'1 万张起 · 7 工作日 · 兰亭品质','tag':'热销','sold':'已售 1.2 万+','color':'#ef4444'},
+  {'title':'数字打样 - 高保真色样','price':'380','old_price':'420','desc':'当日交付 · ΔE ≤ 1.5 色差','tag':'快交','sold':'已售 8800+','color':'#3b82f6'},
+  {'title':'装订服务 - 精装锁线','price':'2.8','old_price':'3.5','desc':'起订 100 本 · 14 工作日','tag':'优选','sold':'已售 5600+','color':'#10b981'},
+  {'title':'专色印刷 - Pantone 配对','price':'1,200','old_price':'1,500','desc':'专色匹配 · 自动调墨','tag':'新品','sold':'已售 2300+','color':'#8b5cf6'},
+  {'title':'装饰加工 - 烫金+UV','price':'680','old_price':'860','desc':'局部烫金 · 局部 UV 上光','tag':'限时','sold':'已售 1200+','color':'#f59e0b'}
+]) %}
+<div class="m-goods">
+  <div class="m-goods-img">{{ ['📋','🎯','📦','🎨','✨'][loop.index0 % 5] }}</div>
+  <div class="m-goods-info">
+    <div class="m-goods-title">
+      <span style="display: inline-block; padding: 1px 5px; background: {{ it.color }}; color: #fff; border-radius: 3px; font-size: 10px; margin-right: 4px;">{{ it.tag }}</span>
+      {{ it.title }}
+    </div>
+    <div class="m-goods-sub">{{ it.desc }}</div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+      <div>
+        <span class="m-goods-price">¥{{ it.price }}</span>
+        <span style="font-size: 11px; color: var(--m-text-muted); text-decoration: line-through; margin-left: 4px;">¥{{ it.old_price }}</span>
+      </div>
+      <div style="font-size: 11px; color: var(--m-text-muted);">{{ it.sold }}</div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{# 加载更多 #}
+<div style="text-align: center; padding: 14px 0 8px; font-size: 11px; color: var(--m-text-muted);">—— 已显示 5 条 · 上拉加载更多 ——</div>
+{% endblock %}

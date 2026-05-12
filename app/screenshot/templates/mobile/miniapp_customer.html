@@ -1,0 +1,74 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+<div style="margin: -12px -14px 0; background: #ededed; min-height: 600px; padding-bottom: 70px;">
+  {# 客服 banner #}
+  <div style="background: linear-gradient(135deg, var(--wx-green), #06ad56); padding: 12px 14px; color: #fff; display: flex; align-items: center; gap: 10px;">
+    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 16px;">💬</div>
+    <div style="flex:1;">
+      <div style="font-size: 13px; font-weight: 600;">{{ ma_cs_name or '兰亭客服 · 小兰' }}</div>
+      <div style="font-size: 10px; opacity: 0.9;">{{ ma_cs_status or '在线 · 平均响应 8 秒' }}</div>
+    </div>
+    <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 12px; font-size: 11px;">📞 转人工</span>
+  </div>
+
+  {# 对话内容 #}
+  <div style="padding: 14px;">
+    {# 时间分隔 #}
+    <div style="text-align: center; font-size: 10px; color: var(--m-text-muted); margin-bottom: 14px;">2025-11-12 14:30</div>
+
+    {# 客服消息 #}
+    {% for m in (ma_cs_messages or [
+      {'me':false,'name':'小兰','content':'您好，欢迎咨询兰亭印务，请问有什么可以帮您？','time':''},
+      {'me':true,'content':'我之前的订单 ORD-20251108-0156 想了解一下进度','time':''},
+      {'me':false,'name':'小兰','content':'好的，正在为您查询订单信息……','time':''},
+      {'me':false,'name':'小兰','content':'查询结果：您的订单已发货，物流单号 SF1234567890，预计 11-13 送达。是否需要联系收货人？','time':'','card':{
+        'title':'订单 ORD-20251108-0156','status':'已发货','sub':'顺丰快递 · 武汉 → 您的地址','progress':'2/4 节点 · 预计 11-13 送达'
+      }},
+      {'me':true,'content':'好的，谢谢。另外能加个发票吗？','time':''},
+      {'me':false,'name':'小兰','content':'当然可以，请告诉我发票抬头和税号，我帮您开具。','time':''}
+    ]) %}
+    {% if m.me %}
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 12px; gap: 8px;">
+      <div style="max-width: 75%; padding: 9px 13px; background: var(--wx-green); color: #fff; border-radius: 12px 4px 12px 12px; font-size: 13px; line-height: 1.5;">{{ m.content }}</div>
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--wx-green); color: #fff; display:flex; align-items:center; justify-content:center; font-size: 14px; flex-shrink: 0;">{{ avatar_char }}</div>
+    </div>
+    {% else %}
+    <div style="display: flex; margin-bottom: 12px; gap: 8px;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wx-green), #06ad56); color: #fff; display:flex; align-items:center; justify-content:center; font-size: 16px; flex-shrink: 0;">🤖</div>
+      <div style="max-width: 75%;">
+        <div style="padding: 9px 13px; background: #fff; border-radius: 4px 12px 12px 12px; font-size: 13px; line-height: 1.5;">{{ m.content }}</div>
+        {% if m.card %}
+        <div style="margin-top: 6px; padding: 12px; background: #fff; border-radius: 8px; border-left: 3px solid var(--wx-green);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 12px; font-weight: 600;">{{ m.card.title }}</span>
+            <span style="font-size: 11px; padding: 1px 6px; background: var(--wx-green-soft); color: var(--wx-green); border-radius: 4px;">{{ m.card.status }}</span>
+          </div>
+          <div style="font-size: 11px; color: var(--m-text-soft); margin-bottom: 4px;">{{ m.card.sub }}</div>
+          <div style="font-size: 11px; color: var(--m-text-muted);">{{ m.card.progress }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    {# 快捷问题 #}
+    <div style="background: #fff; border-radius: 10px; padding: 10px 12px; margin-top: 14px;">
+      <div style="font-size: 11px; color: var(--m-text-muted); margin-bottom: 8px;">您可能想问</div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        {% for q in ['👉 如何申请发票？', '👉 物流多久能到？', '👉 可以加急配送吗？', '👉 想加印怎么办？'] %}
+        <div style="padding: 8px 10px; background: var(--wx-green-soft); color: var(--m-text); border-radius: 6px; font-size: 12px;">{{ q }}</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# 输入栏 #}
+<div style="position: fixed; left: 0; right: 0; bottom: 50px; background: #f3f4f6; border-top: 0.5px solid var(--m-border); padding: 8px 12px; display: flex; gap: 8px; align-items: center;">
+  <span style="font-size: 20px;">🎙</span>
+  <div style="flex:1; height: 36px; background: #fff; border-radius: 18px; padding: 0 14px; display: flex; align-items: center; font-size: 13px; color: var(--m-text-muted);">输入您的问题…</div>
+  <span style="font-size: 22px;">😊</span>
+  <span style="font-size: 22px;">+</span>
+</div>
+{% endblock %}

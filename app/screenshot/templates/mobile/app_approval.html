@@ -1,0 +1,60 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部 tabs #}
+<div style="display: flex; gap: 22px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">
+  {% for t in (apr_tabs or [{'name':'待我审批','count':5},{'name':'我已提交','count':8},{'name':'抄送我','count':3}]) %}
+  <div style="font-size: 14px; padding: 4px 0;
+              {% if loop.index == 1 %}color: var(--m-text); font-weight: 600; border-bottom: 2px solid var(--m-accent);
+              {% else %}color: var(--m-text-soft);{% endif %}">
+    {{ t.name }}{% if t.count %}<span style="font-size:11px; color: var(--m-text-muted); margin-left: 2px;">({{ t.count }})</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{# 审批列表 #}
+{% for a in (apr_items or [
+  {'title':'工艺路线变更申请', 'code':'APL-20251112-001', 'initiator':'李工长', 'time':'今天 09:15', 'reason':'客户特殊要求改用环保水性油墨，需调整 3 道工序顺序', 'priority':'高', 'badge':'red'},
+  {'title':'紧急插单审批', 'code':'APL-20251111-008', 'initiator':'王销售', 'time':'今天 08:30', 'reason':'XX 客户加急订单 200 套，要求 11-15 前交付', 'priority':'紧急', 'badge':'red'},
+  {'title':'设备保养计划', 'code':'APL-20251110-015', 'initiator':'刘机修', 'time':'昨天 17:20', 'reason':'P-03 印刷机进入季度保养窗口期，预计停机 6 小时', 'priority':'中', 'badge':'orange'},
+  {'title':'报销审批', 'code':'APL-20251108-022', 'initiator':'张采购', 'time':'2 天前', 'reason':'印刷耗材采购票据，共 ¥12,580', 'priority':'低', 'badge':'gray'}
+]) %}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+    <div style="flex:1; min-width: 0;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--m-text); margin-bottom: 2px;">{{ a.title }}</div>
+      <div style="font-size: 11px; color: var(--m-text-muted);">{{ a.code }}</div>
+    </div>
+    <span class="m-badge {{ a.badge }}" style="margin-left: 8px;">{{ a.priority }}</span>
+  </div>
+  <div style="font-size: 13px; color: var(--m-text-soft); line-height: 1.5; margin-bottom: 10px;">{{ a.reason }}</div>
+  {# 审批流程节点 #}
+  <div style="display: flex; align-items: center; gap: 0; margin: 12px 0; padding: 8px 0; border-top: 0.5px dashed var(--m-divider); border-bottom: 0.5px dashed var(--m-divider);">
+    {% for node in [
+      {'n':a.initiator, 'state':'done'},
+      {'n':'部门主管', 'state':'done' if loop.index <= 2 else 'current'},
+      {'n':'总监', 'state':'current' if loop.index <= 2 else 'wait'},
+      {'n':'CEO', 'state':'wait'}
+    ] %}
+    <div style="flex:1; text-align: center;">
+      <div style="width: 24px; height: 24px; border-radius: 50%; margin: 0 auto;
+                  display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600;
+                  {% if node.state == 'done' %}background: #10b981; color: #fff;
+                  {% elif node.state == 'current' %}background: var(--m-accent); color: #fff;
+                  {% else %}background: #e5e7eb; color: var(--m-text-muted);{% endif %}">
+        {% if node.state == 'done' %}✓{% elif node.state == 'current' %}·{% else %}○{% endif %}
+      </div>
+      <div style="font-size: 10px; color: var(--m-text-muted); margin-top: 4px;">{{ node.n }}</div>
+    </div>
+    {% if not loop.last %}<div style="width: 14px; height: 1px; background: var(--m-divider);"></div>{% endif %}
+    {% endfor %}
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+    <span style="color: var(--m-text-muted);">{{ a.initiator }} 发起 · {{ a.time }}</span>
+    <div style="display: flex; gap: 8px;">
+      <button style="padding: 5px 14px; border: 1px solid #dc2626; color: #dc2626; background: #fff; border-radius: 14px; font-size: 12px;">驳回</button>
+      <button style="padding: 5px 14px; border: none; color: #fff; background: var(--m-accent); border-radius: 14px; font-size: 12px;">同意</button>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

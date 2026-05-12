@@ -1,0 +1,104 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{# 数据统计页（小程序版） #}
+{% block content %}
+{# 顶部时间筛选 #}
+<div style="background: #fff; padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="font-size: 13px; color: var(--m-text);">{{ ma_chart_period or '2025 年 11 月（11-01 至 11-12）' }}</div>
+  <div style="font-size: 12px; color: var(--wx-green);">切换周期 ›</div>
+</div>
+
+{# 核心 KPI 大数 #}
+<div class="m-card" style="background: linear-gradient(135deg, var(--wx-green-soft), #f0fdf4);">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+    <div>
+      <div style="font-size: 11px; color: var(--m-text-soft); margin-bottom: 4px;">订单金额</div>
+      <div style="font-size: 22px; font-weight: 700; color: var(--m-text);">¥328.6 万</div>
+      <div style="font-size: 11px; color: var(--wx-green); margin-top: 2px;">↑ 12.3% 环比</div>
+    </div>
+    <div>
+      <div style="font-size: 11px; color: var(--m-text-soft); margin-bottom: 4px;">完成订单</div>
+      <div style="font-size: 22px; font-weight: 700; color: var(--m-text);">342</div>
+      <div style="font-size: 11px; color: var(--wx-green); margin-top: 2px;">↑ 8 单 环比</div>
+    </div>
+  </div>
+</div>
+
+{# 折线图 #}
+<div class="m-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <div style="font-size: 13px; font-weight: 600;">订单趋势</div>
+    <div style="display: flex; gap: 4px; font-size: 11px;">
+      <span style="padding: 2px 8px; background: var(--wx-green-soft); color: var(--wx-green); border-radius: 8px;">本月</span>
+      <span style="padding: 2px 8px; color: var(--m-text-muted);">上月</span>
+    </div>
+  </div>
+  <svg viewBox="0 0 320 130" style="width: 100%; height: 130px;">
+    {% for y in [10, 40, 70, 100] %}
+    <line x1="0" y1="{{ y }}" x2="320" y2="{{ y }}" stroke="#f3f4f6" stroke-width="0.5"/>
+    {% endfor %}
+    {# 本月线 #}
+    <polyline points="10,90 35,75 60,80 85,55 110,65 135,40 160,50 185,35 210,45 235,30 260,38 285,25 310,18"
+              fill="none" stroke="#07c160" stroke-width="2.5" stroke-linecap="round"/>
+    <polyline points="10,90 35,75 60,80 85,55 110,65 135,40 160,50 185,35 210,45 235,30 260,38 285,25 310,18 310,120 10,120"
+              fill="#07c160" opacity="0.12"/>
+    {# 上月线（虚线） #}
+    <polyline points="10,100 35,95 60,85 85,90 110,75 135,80 160,70 185,75 210,60 235,65 260,55 285,50 310,42"
+              fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="3,3"/>
+    {# 节点 #}
+    {% for x,y in [(85,55),(160,50),(235,30),(310,18)] %}
+    <circle cx="{{ x }}" cy="{{ y }}" r="3" fill="#07c160"/>
+    {% endfor %}
+    {% for x,d in [(10,'11-01'),(110,'11-05'),(210,'11-09'),(310,'11-12')] %}
+    <text x="{{ x }}" y="128" font-size="9" fill="#9ca3af">{{ d }}</text>
+    {% endfor %}
+  </svg>
+</div>
+
+{# 环形图 + 列表 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">订单构成</div>
+  <div style="display: flex; gap: 14px; align-items: center;">
+    <svg viewBox="0 0 100 100" style="width: 100px; height: 100px; flex-shrink: 0;">
+      <circle cx="50" cy="50" r="36" fill="none" stroke="#07c160" stroke-width="14" stroke-dasharray="100 226" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+      <circle cx="50" cy="50" r="36" fill="none" stroke="#3b82f6" stroke-width="14" stroke-dasharray="70 226" stroke-dashoffset="-100" transform="rotate(-90 50 50)"/>
+      <circle cx="50" cy="50" r="36" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="38 226" stroke-dashoffset="-170" transform="rotate(-90 50 50)"/>
+      <circle cx="50" cy="50" r="36" fill="none" stroke="#ec4899" stroke-width="14" stroke-dasharray="18 226" stroke-dashoffset="-208" transform="rotate(-90 50 50)"/>
+      <text x="50" y="54" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="700">¥328 万</text>
+    </svg>
+    <div style="flex:1; font-size: 12px;">
+      {% for r in [
+        {'color':'#07c160','name':'印刷服务','pct':'44.2%','val':'¥145.2'},
+        {'color':'#3b82f6','name':'装订加工','pct':'31.0%','val':'¥101.9'},
+        {'color':'#f59e0b','name':'装饰工艺','pct':'16.8%','val':'¥55.3'},
+        {'color':'#ec4899','name':'其他','pct':'8.0%','val':'¥26.2'}
+      ] %}
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ r.color }};"></div>
+        <span style="flex:1;">{{ r.name }}</span>
+        <span style="color: var(--m-text-muted);">{{ r.pct }}</span>
+        <span style="color: var(--m-text); font-weight: 600; min-width: 50px; text-align: right;">{{ r.val }} 万</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{# TOP 客户 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">TOP 5 客户</div>
+  {% for c in [
+    {'rk':1,'name':'湖北日报传媒','val':'¥58.6 万','pct':17.8,'color':'#fbbf24'},
+    {'rk':2,'name':'武汉烟草集团','val':'¥42.3 万','pct':12.9,'color':'#9ca3af'},
+    {'rk':3,'name':'华工高新','val':'¥38.2 万','pct':11.6,'color':'#cd7f32'},
+    {'rk':4,'name':'恒大地产武汉','val':'¥32.5 万','pct':9.9,'color':'#9ca3af'},
+    {'rk':5,'name':'东风汽车','val':'¥28.1 万','pct':8.6,'color':'#9ca3af'}
+  ] %}
+  <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0;">
+    <div style="width: 20px; height: 20px; border-radius: 4px; background: {{ c.color }}; color: #fff; text-align: center; line-height: 20px; font-size: 11px; font-weight: 600;">{{ c.rk }}</div>
+    <span style="flex:1; font-size: 12px; color: var(--m-text);">{{ c.name }}</span>
+    <span style="font-size: 12px; font-weight: 600; color: var(--m-text);">{{ c.val }}</span>
+    <span style="font-size: 11px; color: var(--m-text-muted); min-width: 38px; text-align: right;">{{ c.pct }}%</span>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

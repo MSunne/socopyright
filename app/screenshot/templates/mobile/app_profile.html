@@ -1,0 +1,68 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部头像区 #}
+<div style="margin: -12px -14px 12px; padding: 28px 18px 22px; background: linear-gradient(135deg, var(--m-accent), var(--m-dark2)); color: #fff;">
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size: 22px; font-weight: 600;">{{ avatar_char }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 18px; font-weight: 700;">{{ op_user }}</div>
+      <div style="font-size: 12px; opacity: 0.85; margin-top: 2px;">{{ user_role or '业务管理员' }} · 加入 {{ user_join_year or '2023' }}</div>
+      <div style="font-size: 11px; opacity: 0.75; margin-top: 4px;">📱 138 0013 8888 · ✉️ {{ user_email or 'op@example.com' }}</div>
+    </div>
+    <span style="font-size: 16px; opacity: 0.85;">›</span>
+  </div>
+</div>
+
+{# 数据墙 #}
+<div class="m-card" style="padding: 14px 4px;">
+  <div class="m-grid-4">
+    {% for st in (profile_stats or [
+      {'num': '128', 'lbl': '本月任务'},
+      {'num': '96%', 'lbl': '准时率'},
+      {'num': '4.8', 'lbl': '满意度'},
+      {'num': '12', 'lbl': '荣誉勋章'}
+    ]) %}
+    <div class="m-stat" style="background: transparent; box-shadow: none;">
+      <div class="num">{{ st.num }}</div>
+      <div class="lbl">{{ st.lbl }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 菜单分组 1 #}
+<div class="m-card" style="padding: 0; overflow: hidden;">
+  {% for m in (profile_menu_1 or [
+    {'icon':'📋', 'label':'我的工单', 'extra':'12 条'},
+    {'icon':'🔔', 'label':'消息通知', 'extra':'3 未读'},
+    {'icon':'⭐', 'label':'我的收藏', 'extra':''},
+    {'icon':'📊', 'label':'统计报表', 'extra':''}
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--m-accent-soft); display: flex; align-items: center; justify-content: center; font-size: 16px;">{{ m.icon }}</div>
+    <span style="flex:1; font-size: 14px;">{{ m.label }}</span>
+    {% if m.extra %}<span style="font-size: 12px; color: var(--m-text-muted);">{{ m.extra }}</span>{% endif %}
+    <span style="color: var(--m-text-muted);">›</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 菜单分组 2 #}
+<div class="m-card" style="padding: 0; overflow: hidden;">
+  {% for m in (profile_menu_2 or [
+    {'icon':'🛡️', 'label':'账号安全'},
+    {'icon':'⚙️', 'label':'通用设置'},
+    {'icon':'💬', 'label':'意见反馈'},
+    {'icon':'ℹ️', 'label':'关于我们'}
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 32px; height: 32px; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 16px;">{{ m.icon }}</div>
+    <span style="flex:1; font-size: 14px;">{{ m.label }}</span>
+    <span style="color: var(--m-text-muted);">›</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 退出登录 #}
+<button class="m-btn block outline" style="margin-top: 8px;">退出登录</button>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{# 服务方阵 / 分类首页（异于 home）—— 强调分组导航 #}
+{% block content %}
+{# 搜索栏 #}
+<div style="background: #fff; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+  <span style="color: var(--m-text-muted);">🔍</span>
+  <span style="flex:1; font-size: 13px; color: var(--m-text-muted);">{{ ma_grid_search or '搜服务、商品、问题' }}</span>
+</div>
+
+{# 分组方阵 1 #}
+<div class="m-card">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 4px; height: 14px; background: var(--wx-green); border-radius: 2px;"></div>
+      <span style="font-size: 14px; font-weight: 600;">{{ ma_grid_g1 or '印刷服务' }}</span>
+    </div>
+    <span style="font-size: 11px; color: var(--m-text-muted);">全部 12 项 ›</span>
+  </div>
+  <div class="m-grid-4" style="gap: 16px 0;">
+    {% for s in (ma_grid_g1_items or [
+      {'icon':'📋','name':'PS 版印刷','color':'#3b82f6'},
+      {'icon':'🎨','name':'数字打样','color':'#8b5cf6'},
+      {'icon':'🌈','name':'专色印刷','color':'#ec4899'},
+      {'icon':'📃','name':'柔印','color':'#10b981'},
+      {'icon':'📜','name':'凹印','color':'#f59e0b'},
+      {'icon':'🖨','name':'数字印刷','color':'#06b6d4'},
+      {'icon':'📦','name':'包装印刷','color':'#ef4444'},
+      {'icon':'⋯','name':'更多','color':'#9ca3af'}
+    ]) %}
+    <div style="text-align: center;">
+      <div style="width: 46px; height: 46px; border-radius: 12px; background: {{ s.color }}1a; color: {{ s.color }}; margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 22px;">{{ s.icon }}</div>
+      <div style="font-size: 11px;">{{ s.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 分组方阵 2 #}
+<div class="m-card">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 4px; height: 14px; background: var(--wx-green); border-radius: 2px;"></div>
+    <span style="font-size: 14px; font-weight: 600;">{{ ma_grid_g2 or '后期加工' }}</span>
+  </div>
+  <div class="m-grid-4" style="gap: 16px 0;">
+    {% for s in (ma_grid_g2_items or [
+      {'icon':'📚','name':'装订','color':'#3b82f6'},
+      {'icon':'✨','name':'烫金','color':'#f59e0b'},
+      {'icon':'💎','name':'UV 上光','color':'#8b5cf6'},
+      {'icon':'🔪','name':'模切','color':'#06b6d4'},
+      {'icon':'🪡','name':'锁线','color':'#10b981'},
+      {'icon':'📐','name':'压痕','color':'#ec4899'},
+      {'icon':'🎁','name':'装裱','color':'#ef4444'},
+      {'icon':'⋯','name':'更多','color':'#9ca3af'}
+    ]) %}
+    <div style="text-align: center;">
+      <div style="width: 46px; height: 46px; border-radius: 12px; background: {{ s.color }}1a; color: {{ s.color }}; margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 22px;">{{ s.icon }}</div>
+      <div style="font-size: 11px;">{{ s.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 分组方阵 3 #}
+<div class="m-card">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 0.5px solid var(--m-divider);">
+    <div style="width: 4px; height: 14px; background: var(--wx-green); border-radius: 2px;"></div>
+    <span style="font-size: 14px; font-weight: 600;">{{ ma_grid_g3 or '客户服务' }}</span>
+  </div>
+  <div class="m-grid-4" style="gap: 16px 0;">
+    {% for s in (ma_grid_g3_items or [
+      {'icon':'🛒','name':'我的订单','color':'#3b82f6'},
+      {'icon':'💬','name':'在线客服','color':'#10b981'},
+      {'icon':'📞','name':'电话联系','color':'#f59e0b'},
+      {'icon':'📍','name':'附近门店','color':'#8b5cf6'},
+      {'icon':'🎟','name':'优惠券','color':'#ef4444'},
+      {'icon':'⭐','name':'会员中心','color':'#ec4899'},
+      {'icon':'❓','name':'帮助中心','color':'#06b6d4'},
+      {'icon':'📑','name':'电子发票','color':'#9ca3af'}
+    ]) %}
+    <div style="text-align: center;">
+      <div style="width: 46px; height: 46px; border-radius: 12px; background: {{ s.color }}1a; color: {{ s.color }}; margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 22px;">{{ s.icon }}</div>
+      <div style="font-size: 11px;">{{ s.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

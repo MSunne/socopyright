@@ -1,0 +1,61 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部统计 #}
+<div class="m-grid-3" style="margin-bottom: 14px;">
+  {% for k in (task_stats or [
+    {'lbl':'今日待办','num':'8','color':'#3b82f6'},
+    {'lbl':'即将逾期','num':'3','color':'#ef4444'},
+    {'lbl':'已完成','num':'24','color':'#10b981'}
+  ]) %}
+  <div class="m-stat" style="border-left: 3px solid {{ k.color }};">
+    <div class="num" style="color: {{ k.color }};">{{ k.num }}</div>
+    <div class="lbl">{{ k.lbl }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+{# 任务过滤器 #}
+<div style="display: flex; gap: 8px; margin-bottom: 12px;">
+  {% for f in ['全部', '我的', '指派', '关注'] %}
+  <div style="padding: 6px 14px; border-radius: 14px; font-size: 12px;
+              {% if loop.index == 1 %}background: var(--m-accent); color: #fff;
+              {% else %}background: #fff; color: var(--m-text-soft); border: 1px solid var(--m-border);{% endif %}">{{ f }}</div>
+  {% endfor %}
+</div>
+
+{# 任务列表 #}
+{% for t in (task_list or [
+  {'title':'核对 11 月质检报告', 'tag':'质检', 'tag_color':'#10b981', 'priority':'高', 'badge':'red',
+   'sub':'涉及 P-01/P-03/P-05 三条产线，需 11-15 前完成', 'deadline':'今天 18:00', 'progress':35},
+  {'title':'更新供应商资质档案', 'tag':'采购', 'tag_color':'#f59e0b', 'priority':'中', 'badge':'orange',
+   'sub':'12 家油墨供应商资质有效期临近', 'deadline':'明天 12:00', 'progress':60},
+  {'title':'编写月度产能分析报告', 'tag':'报告', 'tag_color':'#3b82f6', 'priority':'高', 'badge':'red',
+   'sub':'重点分析夜班 OEE 下降原因', 'deadline':'11-15 17:00', 'progress':15},
+  {'title':'员工年度技能评估', 'tag':'人事', 'tag_color':'#8b5cf6', 'priority':'低', 'badge':'gray',
+   'sub':'1 号车间 28 人需完成', 'deadline':'11-30 17:00', 'progress':80}
+]) %}
+<div class="m-card">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <div style="width: 18px; height: 18px; border: 1.5px solid {{ t.tag_color }}; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+                {% if t.progress >= 100 %}background: {{ t.tag_color }}; color: #fff; font-size: 12px;{% endif %}">
+      {% if t.progress >= 100 %}✓{% endif %}
+    </div>
+    <span style="flex:1; font-size: 14px; font-weight: 500; color: var(--m-text);">{{ t.title }}</span>
+    <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: {{ t.tag_color }}1a; color: {{ t.tag_color }};">{{ t.tag }}</span>
+    <span class="m-badge {{ t.badge }}" style="font-size: 10px;">{{ t.priority }}</span>
+  </div>
+  <div style="font-size: 12px; color: var(--m-text-soft); margin-bottom: 10px; padding-left: 26px;">{{ t.sub }}</div>
+  <div style="padding-left: 26px;">
+    <div style="height: 5px; background: #f3f4f6; border-radius: 3px; margin-bottom: 6px; overflow: hidden;">
+      <div style="height: 100%; width: {{ t.progress }}%; background: {{ t.tag_color }}; border-radius: 3px;"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 11px;">
+      <span style="color: var(--m-text-muted);">进度 {{ t.progress }}%</span>
+      <span style="color: {% if '今天' in t.deadline %}#ef4444{% else %}var(--m-text-muted){% endif %};">⏰ {{ t.deadline }}</span>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<div class="m-btn-fab">+</div>
+{% endblock %}

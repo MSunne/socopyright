@@ -1,0 +1,45 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 地址列表 #}
+{% for a in (ma_addr_list or [
+  {'name':'张先生','phone':'138 0013 8888','region':'湖北省 武汉市 武昌区','detail':'兰亭印务有限公司 4 号楼 6 楼研发部','tag':'公司','tag_color':'#3b82f6','default':true},
+  {'name':'张先生','phone':'138 0013 8888','region':'湖北省 武汉市 江岸区','detail':'后湖大道 88 号 阳光小区 6 栋 2 单元 1801','tag':'家','tag_color':'#10b981','default':false},
+  {'name':'李女士','phone':'139 0013 7777','region':'湖北省 武汉市 武昌区','detail':'兰亭印务总部 接待大堂前台','tag':'其他','tag_color':'#9ca3af','default':false}
+]) %}
+<div class="m-card" style="padding: 14px; position: relative;">
+  {% if a.default %}<div style="position: absolute; top: 0; right: 0; padding: 3px 8px; background: linear-gradient(135deg, var(--wx-green), #06ad56); color: #fff; font-size: 10px; border-radius: 0 10px 0 10px;">默认</div>{% endif %}
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+    <span style="font-size: 14px; font-weight: 600; color: var(--m-text);">{{ a.name }}</span>
+    <span style="font-size: 13px; color: var(--m-text-soft);">{{ a.phone }}</span>
+    <span style="margin-left: 8px; padding: 2px 6px; font-size: 10px; background: {{ a.tag_color }}1a; color: {{ a.tag_color }}; border-radius: 4px;">{{ a.tag }}</span>
+  </div>
+  <div style="font-size: 13px; color: var(--m-text); line-height: 1.5;">{{ a.region }} {{ a.detail }}</div>
+  <div style="display: flex; gap: 18px; padding-top: 10px; margin-top: 10px; border-top: 0.5px solid var(--m-divider); font-size: 12px; color: var(--m-text-soft);">
+    <div style="display: flex; align-items: center; gap: 4px;">
+      <div style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid {% if a.default %}var(--wx-green){% else %}#d1d5db{% endif %}; background: {% if a.default %}var(--wx-green){% endif %};
+                  position: relative;">
+        {% if a.default %}<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 5px; height: 5px; background: #fff; border-radius: 50%;"></div>{% endif %}
+      </div>
+      <span>设为默认</span>
+    </div>
+    <span style="margin-left: auto;">✏️ 编辑</span>
+    <span>🗑 删除</span>
+  </div>
+</div>
+{% endfor %}
+
+{# 提示 #}
+<div style="text-align: center; padding: 14px 0; font-size: 11px; color: var(--m-text-muted);">—— 共 3 个收货地址 ——</div>
+
+{# 新建地址表单（折叠模拟） #}
+<div class="m-card" style="background: linear-gradient(135deg, var(--wx-green-soft), #d1fae5); border: 1px dashed var(--wx-green); text-align: center; padding: 22px 14px;">
+  <div style="font-size: 24px; color: var(--wx-green); margin-bottom: 6px;">+</div>
+  <div style="font-size: 13px; color: var(--wx-green); font-weight: 600;">新建收货地址</div>
+  <div style="font-size: 11px; color: var(--m-text-soft); margin-top: 4px;">支持微信地址簿一键导入</div>
+</div>
+
+<div style="height: 70px;"></div>
+<div style="position: fixed; left: 0; right: 0; bottom: 50px; background: #fff; padding: 10px 14px;">
+  <button style="width: 100%; padding: 12px; background: var(--wx-green); color: #fff; border: none; border-radius: 22px; font-size: 15px; font-weight: 600;">+ 添加新地址</button>
+</div>
+{% endblock %}

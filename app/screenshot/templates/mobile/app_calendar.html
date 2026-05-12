@@ -1,0 +1,57 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 月份切换 #}
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 14px;">
+  <span style="font-size: 16px;">‹</span>
+  <span style="font-size: 17px; font-weight: 600;">{{ cal_month or '2025 年 11 月' }}</span>
+  <span style="font-size: 16px;">›</span>
+</div>
+
+{# 日历主体 #}
+<div class="m-card" style="padding: 12px;">
+  <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 11px; color: var(--m-text-muted); text-align: center; margin-bottom: 6px;">
+    <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">
+    {% for i in range(35) %}
+    {% set day = i - 4 %}
+    <div style="aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; border-radius: 8px;
+                {% if day == 12 %}background: var(--m-accent); color: #fff;
+                {% elif day in [3, 7, 18, 23, 28] %}background: var(--m-accent-soft); color: var(--m-accent);
+                {% elif day > 0 and day <= 30 %}color: var(--m-text);
+                {% else %}color: #d1d5db;{% endif %}">
+      {% if day > 0 and day <= 30 %}
+      <span>{{ day }}</span>
+      {% if day in [3, 7, 12, 18, 23, 28] %}
+      <div style="width: 4px; height: 4px; border-radius: 50%; margin-top: 2px;
+                  background: {% if day == 12 %}#fff{% else %}var(--m-accent){% endif %};"></div>
+      {% endif %}
+      {% else %}{{ day + 30 if day <= 0 else day - 30 }}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 当日日程 #}
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 4px 8px;">
+  <div style="font-size: 14px; font-weight: 600;">11 月 12 日 周三 · 今日日程</div>
+  <div style="font-size: 12px; color: var(--m-accent);">+ 新建</div>
+</div>
+
+{% for e in (cal_events or [
+  {'time':'09:00 - 10:00','title':'晨会 · 班组生产协调','color':'#3b82f6','tag':'例会','desc':'1 号车间会议室'},
+  {'time':'10:30 - 11:30','title':'客户验厂接待','color':'#f59e0b','tag':'接待','desc':'外宾通道，王总陪同'},
+  {'time':'14:00 - 15:30','title':'工艺路线变更评审','color':'#10b981','tag':'评审','desc':'技术中心，参与：李工长、王质检、刘机修'},
+  {'time':'16:00','title':'设备巡检（P-03 / P-05）','color':'#ef4444','tag':'巡检','desc':'今日重点：振动监测点位'}
+]) %}
+<div class="m-card" style="padding: 12px; border-left: 3px solid {{ e.color }};">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+    <div style="font-size: 11px; color: var(--m-text-muted);">{{ e.time }}</div>
+    <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: {{ e.color }}1a; color: {{ e.color }};">{{ e.tag }}</span>
+  </div>
+  <div style="font-size: 14px; color: var(--m-text); font-weight: 500; margin-bottom: 4px;">{{ e.title }}</div>
+  <div style="font-size: 12px; color: var(--m-text-soft);">{{ e.desc }}</div>
+</div>
+{% endfor %}
+{% endblock %}

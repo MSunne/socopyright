@@ -1,0 +1,61 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部 banner #}
+<div style="margin: -12px -14px 14px; padding: 22px 18px 24px; background: linear-gradient(135deg, var(--m-accent-soft), #fff); border-bottom: 1px solid var(--m-divider);">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+    <div>
+      <div style="font-size: 17px; font-weight: 700; color: var(--m-text); margin-bottom: 6px;">{{ detail_title or '订单 ORD-2025-11200351' }}</div>
+      <div style="font-size: 12px; color: var(--m-text-muted);">{{ detail_code or 'NO. ' }} · 创建于 {{ detail_created_at or '2025-11-12 09:30' }}</div>
+    </div>
+    <span class="m-badge {{ detail_badge or 'green' }}">{{ detail_status or '已完成' }}</span>
+  </div>
+  <div style="display: flex; gap: 14px; font-size: 12px; color: var(--m-text-soft);">
+    <span>👤 {{ detail_owner or '张三' }}</span>
+    <span>📍 {{ detail_location or '武汉 · 武昌区' }}</span>
+  </div>
+</div>
+
+{# 基本信息卡 #}
+<div class="m-card">
+  <div class="m-card-title">基本信息</div>
+  {% for kv in (detail_basic or [{'k':'类型','v':'常规处理'},{'k':'优先级','v':'高'},{'k':'截止时间','v':'2025-11-30'},{'k':'关联工单','v':'WO-1142'},{'k':'当前节点','v':'终审复核'},{'k':'累计耗时','v':'18 小时'}]) %}
+  <div style="display: flex; padding: 8px 0; border-bottom: 0.5px solid var(--m-divider); font-size: 13px;">
+    <span style="width: 80px; color: var(--m-text-muted);">{{ kv.k }}</span>
+    <span style="flex:1; color: var(--m-text);">{{ kv.v }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 业务明细 #}
+<div class="m-card">
+  <div class="m-card-title">业务明细</div>
+  <div style="padding: 8px 0; font-size: 13px; color: var(--m-text); line-height: 1.6;">
+    {{ detail_narrative or '本订单涉及 3 类工艺路线，按客户特殊要求采用环保水性油墨。生产周期 5 个工作日，已完成首件确认，正在批量生产。质检环节按 GB/T 7705-2008 平版装潢印刷品执行。' }}
+  </div>
+</div>
+
+{# 处理记录 timeline #}
+<div class="m-card">
+  <div class="m-card-title">处理记录</div>
+  {% for t in (detail_timeline or [
+    {'time':'11-12 09:30','user':'张三','action':'创建工单','note':'按客户邮件附件录入'},
+    {'time':'11-12 10:15','user':'李工长','action':'分配产线','note':'排至 3 号 PS 版印刷机'},
+    {'time':'11-13 14:20','user':'王质检','action':'首件确认','note':'色差 ΔE=1.2 通过'},
+    {'time':'11-14 17:00','user':'系统','action':'批量完成','note':'共 12000 套'}
+  ]) %}
+  <div style="display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--m-divider); align-items: flex-start;">
+    <div style="font-size: 11px; color: var(--m-text-muted); width: 80px; flex-shrink: 0; padding-top: 1px;">{{ t.time }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 13px; color: var(--m-text);"><b>{{ t.user }}</b> · {{ t.action }}</div>
+      {% if t.note %}<div style="font-size: 11px; color: var(--m-text-muted); margin-top: 2px;">{{ t.note }}</div>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# 底部固定操作栏 #}
+<div style="position: fixed; left: 0; right: 0; bottom: 60px; background: #fff; border-top: 0.5px solid var(--m-border); padding: 10px 14px; display: flex; gap: 10px;">
+  <button class="m-btn outline" style="flex:1;">导出 PDF</button>
+  <button class="m-btn" style="flex:2;">继续处理</button>
+</div>
+{% endblock %}

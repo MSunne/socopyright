@@ -27,6 +27,13 @@ PUBLISH_STATUSES = {"未发表", "已发表"}
 DEV_MODES = {"单独开发", "合作开发", "委托开发", "下达任务开发"}
 _VERSION_RE = re.compile(r"^V\d+\.\d+(\.\d+)?$")
 
+# 第三轮 M1：移动端形态白名单（none / miniapp / app / both）
+# none    = 纯后端管理/工控/中台，没有手机端
+# miniapp = C 端轻应用、扫码、会员、点单（微信小程序）
+# app     = B 端便携工具（巡检/外勤）或 C 端深度应用（健身/教育）
+# both    = 大型 C 端综合服务（电商/银行/出行）—— 极少
+MOBILE_KINDS = {"none", "miniapp", "app", "both"}
+
 # USCC 第 1 位 → 著作权人类型 / 证件类型
 # 参考 GB 32100 登记管理部门代码：1 机构编制、5 民政、9 工商、Y 其他
 USCC_OWNER_KIND = {
@@ -202,6 +209,15 @@ def _normalize_enums(spec: dict) -> dict:
     spec.setdefault("dev_mode", "单独开发")
     if spec["dev_mode"] not in DEV_MODES:
         spec["dev_mode"] = "单独开发"
+
+    # M1: 移动端形态白名单兜底
+    mk = (spec.get("mobile_kind") or "").strip().lower()
+    if mk not in MOBILE_KINDS:
+        logger.warning("mobile_kind=%r 不在白名单，兜底为 none", mk)
+        spec["mobile_kind"] = "none"
+    else:
+        spec["mobile_kind"] = mk
+    spec.setdefault("mobile_kind_reason", "")
     return spec
 
 
@@ -264,12 +280,22 @@ _SPEC_PROMPT = """为下述软件生成完整的软著登记元数据。
     {{"name": "功能模块 1 名", "desc": "1-2 句模块职责描述"}},
     ...
     共 10 个功能模块，必须全部紧扣'{topic}'业务主线
-  ]
+  ],
+
+  "mobile_kind": "判断该软件最合理的移动端形态，4 选 1：none / miniapp / app / both",
+  "mobile_kind_reason": "20-50 字说明为什么选这种"
 }}
+
+mobile_kind 选型 rubric：
+- "none"：纯后端管理 / 工控 / 数据中台 / SCADA / 内部 BI 等——不需要任何手机端
+- "miniapp"：C 端轻应用，低频使用，扫码/支付/会员/点单/预约场景（如餐饮、商超、活动报名）—— 优先选微信小程序
+- "app"：B 端便携工具（巡检、外勤打卡、设备点检）或 C 端深度高频应用（健身、教育、社交）—— 选原生 APP
+- "both"：大型 C 端综合服务（电商、银行、出行）—— **极少**，只有功能复杂到 APP 必备、同时引流又靠小程序时选
 
 禁止：
 - 不要写与"{topic}"无关的通用功能（如"用户管理""权限管理"这种太泛的不计入 10 个模块）
 - main_description **绝对不能**以"该平台 / 该系统 / 该软件 / 本系统 / 本平台"开头（这种开头是 AI 写作的标志）
+- mobile_kind 必须严格 4 选 1，**绝对不要写其他值**
 - 不要在 JSON 外输出任何文字
 - 不要用 markdown 包裹
 """
@@ -362,6 +388,10 @@ async def _gen_one_spec(
             {"name": str(f.get("name", "")).strip(), "desc": str(f.get("desc", "")).strip()}
             for f in functions[:10]
         ],
+
+        # M1: 移动端形态（_normalize_enums 兜底为 none）
+        "mobile_kind": (body.get("mobile_kind") or "none").strip().lower(),
+        "mobile_kind_reason": str(body.get("mobile_kind_reason", "")).strip(),
 
         # Phase 3/4 回填
         "source_lines": 0,

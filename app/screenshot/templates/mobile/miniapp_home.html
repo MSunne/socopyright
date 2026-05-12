@@ -1,0 +1,74 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 搜索栏 #}
+<div style="background: #fff; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+  <span style="color: var(--m-text-muted);">🔍</span>
+  <span style="flex:1; font-size: 13px; color: var(--m-text-muted);">{{ ma_search_hint or '搜索：服务、订单、问题' }}</span>
+  <span style="background: var(--wx-green); color: #fff; padding: 3px 10px; border-radius: 4px; font-size: 11px;">搜索</span>
+</div>
+
+{# Swiper banner #}
+<div style="position: relative; height: 130px; border-radius: 10px; overflow: hidden; margin-bottom: 14px; background: linear-gradient(135deg, var(--wx-green), #06ad56);">
+  <div style="position: absolute; inset: 0; padding: 22px; color: #fff;">
+    <div style="font-size: 17px; font-weight: 700; margin-bottom: 6px;">{{ ma_banner_title or '11 月限时优惠' }}</div>
+    <div style="font-size: 12px; opacity: 0.95;">{{ ma_banner_sub or '会员价 95 折 · 新人立减 ¥50' }}</div>
+    <div style="position: absolute; bottom: 14px; left: 22px; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 12px; font-size: 11px;">立即查看 →</div>
+  </div>
+  {# 指示器 #}
+  <div style="position: absolute; bottom: 6px; right: 14px; display: flex; gap: 4px;">
+    <div style="width: 14px; height: 4px; border-radius: 2px; background: #fff;"></div>
+    <div style="width: 4px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.5);"></div>
+    <div style="width: 4px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.5);"></div>
+  </div>
+</div>
+
+{# 服务方阵 #}
+<div style="background: #fff; border-radius: 10px; padding: 16px 6px; margin-bottom: 12px;">
+  <div class="m-grid-4" style="gap: 16px 0;">
+    {% for s in (ma_services or [
+      {'name':'快速下单','icon':'📋','color':'#3b82f6'},
+      {'name':'扫码报修','icon':'🛠','color':'#f59e0b'},
+      {'name':'我的订单','icon':'📦','color':'#10b981'},
+      {'name':'会员中心','icon':'⭐','color':'#ef4444'},
+      {'name':'附近门店','icon':'📍','color':'#8b5cf6'},
+      {'name':'优惠券','icon':'🎟','color':'#ec4899'},
+      {'name':'帮助中心','icon':'💡','color':'#06b6d4'},
+      {'name':'更多','icon':'⋯','color':'#9ca3af'}
+    ]) %}
+    <div style="text-align: center;">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ s.color }}1a; color: {{ s.color }}; margin: 0 auto 6px; display:flex; align-items:center; justify-content:center; font-size: 22px;">{{ s.icon }}</div>
+      <div style="font-size: 11px; color: var(--m-text);">{{ s.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 公告通栏 #}
+<div style="background: #fffbea; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 12px;">
+  <span style="background: #f59e0b; color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 10px;">公告</span>
+  <span style="flex:1; color: #92400e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ ma_notice or '11 月 18 日 14:00-16:00 系统升级维护，请合理安排业务' }}</span>
+  <span style="color: var(--m-text-muted);">›</span>
+</div>
+
+{# 商品/服务列表 #}
+<div style="background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 12px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <div style="font-size: 14px; font-weight: 600;">猜你喜欢</div>
+    <span style="font-size: 11px; color: var(--m-text-muted);">基于历史 · 全部 ›</span>
+  </div>
+  {% for g in (ma_goods or [
+    {'title':'PS 版 (4色) - 单 1 万张','sub':'兰亭 · 88 折 · 现货','price':'2,580','unit':'/ 单'},
+    {'title':'装订服务 - 骑马钉','sub':'快速交付 · 24h 出货','price':'0.85','unit':'/ 本'},
+    {'title':'打样服务 - 数字打样','sub':'1:1 还原 · 当日交付','price':'380','unit':'/ 次'}
+  ]) %}
+  <div class="m-goods">
+    <div class="m-goods-img">{{ ['📋', '📦', '🎯'][loop.index0] }}</div>
+    <div class="m-goods-info">
+      <div class="m-goods-title">{{ g.title }}</div>
+      <div class="m-goods-sub">{{ g.sub }}</div>
+      <div><span class="m-goods-price">¥{{ g.price }}</span><span class="m-goods-price-unit"> {{ g.unit }}</span></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

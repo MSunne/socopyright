@@ -1,0 +1,243 @@
+/* ============================================================
+ * 移动端公共样式（APP + 小程序共用基底）
+ * 用于在 Playwright 用窄视口（375/390 宽）渲染移动端 UI 截图
+ * 与 base.css 完全独立——不复用 PC 的 shell 系统
+ * ============================================================ */
+
+:root {
+  --m-bg: #f4f5f7;
+  --m-card: #ffffff;
+  --m-border: rgba(0, 0, 0, 0.06);
+  --m-text: #1f2937;
+  --m-text-soft: #6b7280;
+  --m-text-muted: #9ca3af;
+  --m-divider: #f1f3f5;
+  --m-radius-card: 12px;
+  --m-radius-input: 10px;
+  --m-font-base: 14px;
+  --m-font-sm: 12px;
+  --m-font-xs: 11px;
+  /* 主色由 _profile_css_vars 注入，与 PC 端同一调色板 */
+  --m-accent: {{ COLOR_ACCENT }};
+  --m-accent-soft: {{ COLOR_ACCENT }}1a;
+  --m-dark: {{ COLOR_DARK }};
+  --m-dark2: {{ COLOR_DARK2 }};
+  --m-font-family: {{ FONT_FAMILY }};
+  /* 微信小程序主题 */
+  --wx-green: #07c160;
+  --wx-green-soft: #07c1601a;
+  --wx-bg: #ededed;
+  --wx-card: #ffffff;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--m-font-family);
+  font-size: var(--m-font-base);
+  color: var(--m-text);
+  background: var(--m-bg);
+  line-height: 1.5;
+}
+
+/* ---------- iOS 状态栏 ---------- */
+.ios-statusbar {
+  height: 44px; padding: 12px 18px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 600; color: #1f2937;
+  background: transparent;
+}
+.ios-statusbar .ios-status-icons {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px;
+}
+
+/* ---------- APP 顶部导航 ---------- */
+.app-nav {
+  height: 44px; padding: 0 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff;
+  border-bottom: 0.5px solid var(--m-border);
+}
+.app-nav-back { font-size: 22px; color: var(--m-accent); width: 24px; }
+.app-nav-title { font-size: 16px; font-weight: 600; color: var(--m-text); }
+.app-nav-right { font-size: 20px; color: var(--m-text); width: 24px; text-align: right; }
+
+/* ---------- APP 底部 tabbar ---------- */
+.app-tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: 60px; padding-bottom: 12px;
+  display: flex; align-items: stretch;
+  background: rgba(255,255,255,0.95);
+  border-top: 0.5px solid var(--m-border);
+  z-index: 10;
+}
+.app-tabbar .tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  font-size: 10px; color: var(--m-text-muted);
+}
+.app-tabbar .tab-item.active { color: var(--m-accent); }
+.app-tabbar .tab-icon {
+  width: 22px; height: 22px; line-height: 22px; text-align: center;
+  font-size: 18px; color: inherit;
+}
+
+/* ---------- APP 主区 ---------- */
+.app-main {
+  padding: 12px 14px 80px; /* 留底部 tabbar 空间 */
+}
+
+/* ---------- 卡片 / 列表项 ---------- */
+.m-card {
+  background: var(--m-card);
+  border-radius: var(--m-radius-card);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.m-card-title { font-size: 15px; font-weight: 600; color: var(--m-text); margin-bottom: 8px; }
+.m-card-sub { font-size: var(--m-font-sm); color: var(--m-text-soft); margin-bottom: 4px; }
+
+.m-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--m-divider);
+}
+.m-row:last-child { border-bottom: none; }
+.m-row .row-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--m-accent-soft); color: var(--m-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; flex-shrink: 0;
+}
+.m-row .row-main { flex: 1; min-width: 0; }
+.m-row .row-title { font-size: 14px; color: var(--m-text); margin-bottom: 2px; }
+.m-row .row-sub { font-size: var(--m-font-sm); color: var(--m-text-soft); }
+.m-row .row-right { font-size: var(--m-font-sm); color: var(--m-text-muted); text-align: right; flex-shrink: 0; }
+
+/* ---------- badge ---------- */
+.m-badge {
+  display: inline-block; padding: 2px 8px;
+  font-size: var(--m-font-xs); border-radius: 8px;
+  background: var(--m-accent-soft); color: var(--m-accent);
+}
+.m-badge.green  { background: rgba(16,185,129,0.12); color: #059669; }
+.m-badge.blue   { background: rgba(59,130,246,0.12); color: #2563eb; }
+.m-badge.orange { background: rgba(245,158,11,0.12); color: #d97706; }
+.m-badge.red    { background: rgba(239,68,68,0.12);  color: #dc2626; }
+.m-badge.gray   { background: rgba(107,114,128,0.12); color: #4b5563; }
+
+/* ---------- 按钮 ---------- */
+.m-btn {
+  display: inline-block; padding: 10px 18px;
+  background: var(--m-accent); color: #fff; border: none;
+  border-radius: var(--m-radius-input); font-size: 14px; font-weight: 600;
+  text-align: center;
+}
+.m-btn.block { display: block; width: 100%; }
+.m-btn.outline { background: transparent; color: var(--m-accent); border: 1px solid var(--m-accent); }
+.m-btn-fab {
+  position: fixed; right: 18px; bottom: 80px;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--m-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  z-index: 9;
+}
+
+/* ---------- input ---------- */
+.m-input, .m-textarea, .m-select {
+  width: 100%; padding: 12px 14px;
+  background: #fff; border: 1px solid var(--m-border);
+  border-radius: var(--m-radius-input);
+  font-size: 14px; color: var(--m-text);
+  font-family: inherit;
+}
+.m-textarea { min-height: 90px; resize: none; }
+.m-label { font-size: var(--m-font-sm); color: var(--m-text-soft); margin-bottom: 6px; display: block; }
+
+/* ---------- 微信小程序 ---------- */
+.mobile-miniapp .wx-statusbar {
+  height: 44px; padding: 12px 14px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 600; color: #1f2937;
+  background: var(--wx-bg);
+}
+.mobile-miniapp .wx-capsule {
+  background: rgba(0,0,0,0.04);
+  border: 0.5px solid rgba(0,0,0,0.08);
+  border-radius: 16px; padding: 4px 10px;
+  font-size: 14px; color: #1f2937;
+  display: flex; align-items: center; gap: 8px;
+}
+.mobile-miniapp .wx-capsule .sep {
+  width: 0.5px; height: 12px; background: rgba(0,0,0,0.12);
+}
+.mobile-miniapp .ma-header {
+  height: 44px; padding: 0 14px;
+  display: flex; align-items: center;
+  background: var(--wx-bg);
+  font-size: 17px; font-weight: 600;
+}
+.mobile-miniapp .ma-main { padding: 12px 14px 65px; background: var(--wx-bg); min-height: 600px; }
+.mobile-miniapp .ma-tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: 50px;
+  display: flex; align-items: stretch;
+  background: #f7f7f7;
+  border-top: 0.5px solid rgba(0,0,0,0.08);
+}
+.mobile-miniapp .ma-tabbar .tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; font-size: 10px; color: #7a7e83;
+}
+.mobile-miniapp .ma-tabbar .tab-item.active { color: var(--wx-green); }
+.mobile-miniapp .ma-tabbar .tab-icon { font-size: 18px; }
+
+/* 小程序色调覆盖：accent 改为微信绿 */
+.mobile-miniapp { --m-accent: var(--wx-green); --m-accent-soft: var(--wx-green-soft); }
+
+/* ---------- 全局水印（沿用 base.css 的） ---------- */
+.global-water {
+  position: fixed;
+  right: 10px; bottom: 4px;
+  font-size: 9px; color: rgba(120,130,140,0.55);
+  font-family: var(--m-font-family);
+  letter-spacing: 0.3px;
+  pointer-events: none; z-index: 999;
+}
+
+/* ---------- 通用 grid ---------- */
+.m-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.m-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.m-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+/* ---------- 数字/指标 ---------- */
+.m-stat {
+  background: var(--m-card); border-radius: 10px; padding: 12px;
+  text-align: center;
+}
+.m-stat .num { font-size: 20px; font-weight: 700; color: var(--m-text); }
+.m-stat .lbl { font-size: var(--m-font-xs); color: var(--m-text-muted); margin-top: 2px; }
+.m-stat .trend { font-size: var(--m-font-xs); color: #059669; margin-top: 2px; }
+
+/* ---------- 商品/服务卡片（小程序常用） ---------- */
+.m-goods {
+  display: flex; gap: 10px; padding: 10px;
+  background: var(--m-card); border-radius: var(--m-radius-card);
+  margin-bottom: 10px;
+}
+.m-goods-img {
+  width: 80px; height: 80px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--m-accent-soft), #f3f4f6);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: var(--m-accent);
+}
+.m-goods-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.m-goods-title { font-size: 14px; color: var(--m-text); font-weight: 500; line-height: 1.3; margin-bottom: 4px; }
+.m-goods-sub { font-size: var(--m-font-sm); color: var(--m-text-muted); margin-bottom: auto; }
+.m-goods-price { font-size: 16px; color: #dc2626; font-weight: 600; }
+.m-goods-price-unit { font-size: 11px; color: var(--m-text-muted); }

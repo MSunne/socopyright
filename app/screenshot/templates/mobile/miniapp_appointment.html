@@ -1,0 +1,88 @@
+{% extends "mobile/partials/_miniapp_shell.html" %}
+{% block content %}
+{# 预约项目 #}
+<div class="m-card">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="width: 60px; height: 60px; border-radius: 10px; background: linear-gradient(135deg, var(--wx-green-soft), #d1fae5); display: flex; align-items: center; justify-content: center; font-size: 28px;">{{ ma_apt_icon or '🏢' }}</div>
+    <div style="flex:1;">
+      <div style="font-size: 14px; font-weight: 600;">{{ ma_apt_title or '工厂参观接待' }}</div>
+      <div style="font-size: 11px; color: var(--m-text-muted); margin-top: 2px;">{{ ma_apt_sub or '武汉兰亭印务 1 号厂区 · 4F 展厅' }}</div>
+      <div style="display: flex; gap: 8px; margin-top: 6px;">
+        <span style="font-size: 10px; padding: 2px 6px; background: var(--wx-green-soft); color: var(--wx-green); border-radius: 4px;">免费</span>
+        <span style="font-size: 10px; padding: 2px 6px; background: #fef3c7; color: #92400e; border-radius: 4px;">需预约</span>
+        <span style="font-size: 10px; padding: 2px 6px; background: #ede9fe; color: #6d28d9; border-radius: 4px;">含茶歇</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# 日期选择 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">选择日期</div>
+  <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;">
+    {% for i in range(14) %}
+    {% set day = 12 + i %}
+    {% set weekday = ['三','四','五','六','日','一','二','三','四','五','六','日','一','二'][i] %}
+    <div style="text-align: center; padding: 6px 0; border-radius: 6px; cursor: pointer;
+                {% if i == 3 %}background: var(--wx-green); color: #fff;
+                {% elif i in [5, 6, 12, 13] %}background: #f9fafb; color: var(--m-text-muted);
+                {% else %}color: var(--m-text);{% endif %}">
+      <div style="font-size: 9px;">{{ weekday }}</div>
+      <div style="font-size: 14px; font-weight: 500; margin-top: 2px;">{{ day if day <= 30 else day - 30 }}</div>
+      {% if i == 3 %}<div style="font-size: 9px;">已选</div>{% elif i in [0, 1, 4, 7, 8, 11] %}<div style="font-size: 9px; color: #10b981;">可约</div>{% elif i in [2, 9, 10] %}<div style="font-size: 9px; color: #ef4444;">已满</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 时间段 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">选择时段 · 11 月 15 日 周六</div>
+  <div class="m-grid-3" style="gap: 8px;">
+    {% for s in (ma_apt_slots or [
+      {'time':'09:00','sub':'剩 5 位','state':'available','sel':false},
+      {'time':'10:30','sub':'剩 3 位','state':'tight','sel':false},
+      {'time':'14:00','sub':'已选','state':'selected','sel':true},
+      {'time':'15:30','sub':'剩 8 位','state':'available','sel':false},
+      {'time':'16:30','sub':'已满','state':'full','sel':false},
+      {'time':'17:30','sub':'剩 2 位','state':'tight','sel':false}
+    ]) %}
+    <div style="text-align: center; padding: 10px 0; border-radius: 8px;
+                {% if s.sel %}background: var(--wx-green); color: #fff;
+                {% elif s.state == 'full' %}background: #f3f4f6; color: var(--m-text-muted); opacity: 0.6;
+                {% else %}background: #f9fafb; border: 1px solid var(--m-border);{% endif %}">
+      <div style="font-size: 14px; font-weight: 600;">{{ s.time }}</div>
+      <div style="font-size: 10px; margin-top: 2px; {% if s.state == 'tight' and not s.sel %}color: #ef4444;{% elif not s.sel %}color: var(--m-text-muted);{% endif %}">{{ s.sub }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# 预约人信息 #}
+<div class="m-card">
+  <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">联系信息</div>
+  <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px; color: var(--m-text);">姓名</span>
+    <span style="flex:1; font-size: 13px;">{{ ma_apt_name or '张先生' }}</span>
+    <span style="color: var(--m-text-muted);">›</span>
+  </div>
+  <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 80px; font-size: 13px;">手机号</span>
+    <span style="flex:1; font-size: 13px;">138 0013 8888</span>
+  </div>
+  <div style="display: flex; align-items: center; padding: 8px 0;">
+    <span style="width: 80px; font-size: 13px;">参观人数</span>
+    <span style="flex:1; font-size: 13px;">3 人</span>
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <div style="width: 26px; height: 26px; border: 1px solid var(--m-border); border-radius: 50%; text-align: center; line-height: 24px; font-size: 14px;">−</div>
+      <span style="font-size: 13px; width: 24px; text-align: center;">3</span>
+      <div style="width: 26px; height: 26px; border: 1px solid var(--wx-green); background: var(--wx-green); color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 14px;">+</div>
+    </div>
+  </div>
+</div>
+
+<div style="height: 80px;"></div>
+<div style="position: fixed; left: 0; right: 0; bottom: 50px; background: #fff; padding: 10px 14px;">
+  <button style="width: 100%; padding: 12px; background: var(--wx-green); color: #fff; border: none; border-radius: 22px; font-size: 15px; font-weight: 600;">确认预约（免费）</button>
+</div>
+{% endblock %}

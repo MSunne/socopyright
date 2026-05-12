@@ -1,0 +1,59 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+<div style="margin: -12px -14px 0;">
+  {# 模拟地图（CSS 网格 + 路线） #}
+  <div style="position: relative; height: 420px; background: #e8edf2; overflow: hidden;">
+    {# 经纬度网格 #}
+    <svg viewBox="0 0 360 420" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.4;">
+      {% for x in range(0, 360, 40) %}<line x1="{{ x }}" y1="0" x2="{{ x }}" y2="420" stroke="#b0bcc8" stroke-width="0.4"/>{% endfor %}
+      {% for y in range(0, 420, 40) %}<line x1="0" y1="{{ y }}" x2="360" y2="{{ y }}" stroke="#b0bcc8" stroke-width="0.4"/>{% endfor %}
+    </svg>
+    {# 道路 #}
+    <svg viewBox="0 0 360 420" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+      <path d="M 0 280 Q 100 270, 180 220 T 360 130" stroke="#fff" stroke-width="14" fill="none" opacity="0.9"/>
+      <path d="M 0 280 Q 100 270, 180 220 T 360 130" stroke="#cdd3dc" stroke-width="12" fill="none"/>
+      <path d="M 160 0 L 200 220" stroke="#fff" stroke-width="10" fill="none" opacity="0.9"/>
+      <path d="M 160 0 L 200 220" stroke="#cdd3dc" stroke-width="8" fill="none"/>
+    </svg>
+    {# 街区色块 #}
+    <div style="position: absolute; top: 50px; left: 30px; width: 120px; height: 90px; background: rgba(180, 200, 178, 0.5); border-radius: 4px;"></div>
+    <div style="position: absolute; top: 100px; right: 30px; width: 100px; height: 80px; background: rgba(220, 220, 200, 0.5); border-radius: 4px;"></div>
+    <div style="position: absolute; bottom: 80px; left: 60px; width: 90px; height: 70px; background: rgba(190, 210, 180, 0.5); border-radius: 4px;"></div>
+
+    {# POI 标记 #}
+    <div style="position: absolute; top: 130px; left: 80px;">
+      <div style="display: inline-block; padding: 4px 8px; background: var(--m-accent); color: #fff; border-radius: 12px; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); white-space: nowrap;">📍 {{ map_target or '兰亭印务 1 号车间' }}</div>
+      <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid var(--m-accent); margin: 0 auto;"></div>
+    </div>
+    {# 我的位置 #}
+    <div style="position: absolute; top: 230px; left: 165px;">
+      <div style="width: 18px; height: 18px; border-radius: 50%; background: var(--m-accent); border: 3px solid #fff; box-shadow: 0 0 0 4px {{ COLOR_ACCENT or '#2563eb' }}33;"></div>
+    </div>
+
+    {# 右侧悬浮按钮 #}
+    <div style="position: absolute; right: 12px; top: 80px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="width: 36px; height: 36px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); font-size: 14px;">+</div>
+      <div style="width: 36px; height: 36px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); font-size: 14px;">−</div>
+      <div style="width: 36px; height: 36px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); font-size: 14px; color: var(--m-accent);">📍</div>
+    </div>
+  </div>
+
+  {# 底部信息卡 #}
+  <div style="padding: 14px 16px; background: #fff;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div>
+        <div style="font-size: 15px; font-weight: 600;">{{ map_status or '已到达签到范围' }}</div>
+        <div style="font-size: 12px; color: var(--m-text-soft); margin-top: 2px;">距离打卡点 <b style="color: var(--m-accent);">{{ map_distance or '32 米' }}</b> · 精度 {{ map_accuracy or '5 米' }}</div>
+      </div>
+      <div style="font-size: 24px;">📍</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; padding: 10px 12px; background: var(--m-accent-soft); border-radius: 8px; margin-bottom: 12px;">
+      <div><span style="color: var(--m-text-muted);">时间：</span><span style="color: var(--m-text);">{{ map_time or '2025-11-12 14:32' }}</span></div>
+      <div><span style="color: var(--m-text-muted);">类型：</span><span style="color: var(--m-text);">{{ map_check_type or '车间巡检' }}</span></div>
+      <div><span style="color: var(--m-text-muted);">网点：</span><span style="color: var(--m-text);">{{ map_site or 'WH-武昌-3F' }}</span></div>
+      <div><span style="color: var(--m-text-muted);">工号：</span><span style="color: var(--m-text);">A2401</span></div>
+    </div>
+    <button class="m-btn block">📍 立即打卡</button>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 顶部告警横幅 #}
+<div style="margin: -12px -14px 14px; padding: 18px 16px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; position: relative;">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+    <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size: 16px;">⚠</div>
+    <div style="font-size: 16px; font-weight: 700;">{{ notify_title or '紧急告警 · P0' }}</div>
+    <div style="margin-left: auto; font-size: 11px; opacity: 0.85;">{{ notify_time or '08:15:32' }}</div>
+  </div>
+  <div style="font-size: 13px; opacity: 0.95; line-height: 1.4;">{{ notify_brief or '印刷机 P-03 检测到轴承异常振动，振幅超出阈值 18%，请立即停机巡检' }}</div>
+</div>
+
+{# 告警详情卡 #}
+<div class="m-card">
+  <div class="m-card-title">告警详情</div>
+  {% for kv in (notify_details or [
+    {'k':'告警编号','v':'ALM-2025111208'},
+    {'k':'设备 ID','v':'P-03 / 印刷机 #3'},
+    {'k':'位置','v':'1 号车间 · A 区'},
+    {'k':'触发规则','v':'振动监测 · 振幅 > 0.45 mm/s'},
+    {'k':'当前指标','v':'0.53 mm/s（阈值 0.45）'},
+    {'k':'持续时长','v':'4 分 28 秒'}
+  ]) %}
+  <div style="display: flex; padding: 7px 0; border-bottom: 0.5px solid var(--m-divider); font-size: 13px;">
+    <span style="width: 90px; color: var(--m-text-muted);">{{ kv.k }}</span>
+    <span style="flex:1; color: var(--m-text);">{{ kv.v }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+{# 推荐处理步骤 #}
+<div class="m-card">
+  <div class="m-card-title">推荐处理步骤</div>
+  <ol style="padding-left: 22px; margin: 0; font-size: 13px; line-height: 1.7; color: var(--m-text);">
+    {% for s in (notify_steps or [
+      '立即按下停机按钮（紧急停机），等待设备完全停止',
+      '检查 3 号印刷机 PS 版轴承及传动皮带',
+      '如无明显故障可重新启动；持续报警需联系机修组',
+      '在 30 分钟内填写《设备异常处置记录》并上传'
+    ]) %}<li>{{ s }}</li>{% endfor %}
+  </ol>
+</div>
+
+{# 相关联系人 #}
+<div class="m-card">
+  <div class="m-card-title">相关人员</div>
+  {% for p in (notify_contacts or [
+    {'avatar':'李','name':'李工长','role':'车间主任','phone':'138 0013 8888'},
+    {'avatar':'刘','name':'刘机修','role':'设备工程师','phone':'139 0013 8888'},
+    {'avatar':'王','name':'王安全','role':'安全员','phone':'137 0013 8888'}
+  ]) %}
+  <div class="m-row">
+    <div class="row-avatar">{{ p.avatar }}</div>
+    <div class="row-main">
+      <div class="row-title">{{ p.name }}</div>
+      <div class="row-sub">{{ p.role }} · {{ p.phone }}</div>
+    </div>
+    <div class="row-right">
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--m-accent); color: #fff; display:flex; align-items:center; justify-content:center; font-size: 14px;">📞</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# 底部操作 #}
+<div style="position: fixed; left: 0; right: 0; bottom: 60px; background: #fff; border-top: 0.5px solid var(--m-border); padding: 10px 14px; display: flex; gap: 10px;">
+  <button class="m-btn outline" style="flex:1;">转派</button>
+  <button style="flex:2; background: #dc2626; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600;">🚨 立即响应</button>
+</div>
+{% endblock %}

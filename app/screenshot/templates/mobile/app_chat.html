@@ -1,0 +1,54 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{# IM 对话窗口（业务沟通场景） #}
+{% block content %}
+<div style="margin: -12px -14px 0; background: #ededed; min-height: 600px; padding-bottom: 60px;">
+  {# 顶部协助标签 #}
+  <div style="background: #fffbea; padding: 8px 14px; font-size: 11px; color: #92400e; border-bottom: 0.5px solid #fde68a;">
+    💼 工单沟通组 · {{ chat_topic or 'WO-1142 工艺路线变更' }} · 6 人
+  </div>
+
+  {# 对话消息 #}
+  <div style="padding: 12px;">
+    {% for m in (chat_messages or [
+      {'me':false,'name':'李工长','avatar':'李','time':'09:15','content':'下午客户来验厂，需要把 3 号产线的工艺路线切换到环保水性油墨方案。'},
+      {'me':false,'name':'王质检','avatar':'王','time':'09:16','content':'我看一下当前的检测参数，环保油墨色差容差是 ΔE ≤ 1.5。'},
+      {'me':true,'name':'我','avatar':'@','time':'09:18','content':'好的，请王质检 10 点前出具确认意见，李工长准备样品对比。'},
+      {'me':false,'name':'刘机修','avatar':'刘','time':'09:25','content':'PS 版需要预热到 38℃，环保油墨更敏感。已通知操作工。','file':{'name':'设备预热作业指导书.pdf','size':'1.2 MB'}},
+      {'me':true,'name':'我','avatar':'@','time':'09:30','content':'收到。系统会在 10:00 推送切换通知，请大家配合。'},
+      {'me':false,'name':'王质检','avatar':'王','time':'09:42','content':'初步对比已完成，色差 ΔE=1.2，可以批量。'}
+    ]) %}
+    {% if m.me %}
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 14px; gap: 8px;">
+      <div style="max-width: 70%; padding: 9px 13px; background: var(--m-accent); color: #fff; border-radius: 12px 4px 12px 12px; font-size: 13px; line-height: 1.5;">{{ m.content }}</div>
+      <div style="width: 36px; height: 36px; border-radius: 6px; background: var(--m-accent-soft); color: var(--m-accent); display:flex; align-items:center; justify-content:center; font-size: 13px; font-weight: 600;">{{ m.avatar }}</div>
+    </div>
+    {% else %}
+    <div style="display: flex; margin-bottom: 14px; gap: 8px;">
+      <div style="width: 36px; height: 36px; border-radius: 6px; background: var(--m-accent-soft); color: var(--m-accent); display:flex; align-items:center; justify-content:center; font-size: 13px; font-weight: 600;">{{ m.avatar }}</div>
+      <div style="max-width: 70%;">
+        <div style="font-size: 10px; color: var(--m-text-muted); margin-bottom: 3px;">{{ m.name }} · {{ m.time }}</div>
+        <div style="padding: 9px 13px; background: #fff; border-radius: 4px 12px 12px 12px; font-size: 13px; color: var(--m-text); line-height: 1.5;">{{ m.content }}</div>
+        {% if m.file %}
+        <div style="margin-top: 6px; padding: 10px; background: #fff; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">📄</span>
+          <div>
+            <div style="font-size: 12px; color: var(--m-text);">{{ m.file.name }}</div>
+            <div style="font-size: 10px; color: var(--m-text-muted);">{{ m.file.size }}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{# 输入栏 #}
+<div style="position: fixed; left: 0; right: 0; bottom: 60px; background: #f3f4f6; border-top: 0.5px solid var(--m-border); padding: 8px 12px; display: flex; gap: 8px; align-items: center;">
+  <span style="font-size: 22px;">🎙</span>
+  <div style="flex:1; height: 36px; background: #fff; border-radius: 6px; padding: 0 12px; display: flex; align-items: center; font-size: 13px; color: var(--m-text-muted);">输入消息…</div>
+  <span style="font-size: 22px;">😊</span>
+  <span style="font-size: 22px;">+</span>
+</div>
+{% endblock %}

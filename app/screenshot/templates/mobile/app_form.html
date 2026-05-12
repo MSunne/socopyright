@@ -1,0 +1,47 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+<div style="font-size: 13px; color: var(--m-text-soft); margin-bottom: 10px;">{{ form_subtitle or '请填写以下信息，提交后将进入审核流程' }}</div>
+
+<div class="m-card">
+  <label class="m-label">{{ form_field_1_label or '工单编号' }}</label>
+  <input class="m-input" value="{{ form_field_1_value or 'WO-' }}" style="margin-bottom: 14px;"/>
+
+  <label class="m-label">{{ form_field_2_label or '关联客户' }}</label>
+  <div class="m-input" style="display: flex; justify-content: space-between; align-items: center;">
+    <span>{{ form_field_2_value or '武汉兰亭印务有限公司' }}</span><span style="color: var(--m-text-muted);">›</span>
+  </div>
+</div>
+
+<div class="m-card">
+  <label class="m-label">{{ form_field_3_label or '业务类型' }}</label>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+    {% for tag in (form_tags or ['印刷', '装订', '装饰', '出版']) %}
+    <div style="padding: 6px 14px; border-radius: 8px; font-size: 12px;
+                {% if loop.index == 2 %}background: var(--m-accent-soft); color: var(--m-accent); border: 1px solid var(--m-accent);
+                {% else %}background: #f3f4f6; color: var(--m-text-soft);{% endif %}">{{ tag }}</div>
+    {% endfor %}
+  </div>
+
+  <label class="m-label">{{ form_field_4_label or '截止时间' }}</label>
+  <div class="m-input" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+    <span>{{ form_field_4_value or '2025-11-30' }}</span><span style="color: var(--m-text-muted);">📅</span>
+  </div>
+
+  <label class="m-label">{{ form_field_5_label or '备注说明' }}</label>
+  <textarea class="m-textarea">{{ form_field_5_value or '客户要求使用环保水性油墨，单 PS 版印刷，色差控制在 ΔE ≤ 1.5 内' }}</textarea>
+</div>
+
+<div class="m-card">
+  <label class="m-label">{{ form_attach_label or '附件上传' }}</label>
+  <div style="display: flex; gap: 8px;">
+    <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size: 12px; color: var(--m-text-muted);">📄</div>
+    <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size: 12px; color: var(--m-text-muted);">📷</div>
+    <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size: 22px; color: var(--m-text-muted); border: 1.5px dashed var(--m-text-muted);">+</div>
+  </div>
+</div>
+
+<div style="position: fixed; left: 0; right: 0; bottom: 60px; background: #fff; border-top: 0.5px solid var(--m-border); padding: 10px 14px; display: flex; gap: 10px;">
+  <button class="m-btn outline" style="flex:1;">保存草稿</button>
+  <button class="m-btn" style="flex:2;">提交审核</button>
+</div>
+{% endblock %}

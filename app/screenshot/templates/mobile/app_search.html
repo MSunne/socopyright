@@ -1,0 +1,50 @@
+{% extends "mobile/partials/_app_shell.html" %}
+{% block content %}
+{# 搜索栏 #}
+<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+  <div style="flex:1; display:flex; align-items:center; gap:8px; padding:9px 12px; background:#f3f4f6; border-radius:10px; font-size:13px;">
+    <span style="color: var(--m-text-muted);">🔍</span>
+    <span style="color: var(--m-text);">{{ search_keyword or '兰亭印务质量异常' }}</span>
+    <span style="margin-left: auto; color: var(--m-text-muted); font-size: 14px;">✕</span>
+  </div>
+  <button style="background: none; border: none; color: var(--m-accent); font-size: 14px;">取消</button>
+</div>
+
+{# 搜索历史 #}
+<div style="margin-bottom: 18px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+    <div style="font-size: 13px; font-weight: 600; color: var(--m-text);">搜索历史</div>
+    <span style="font-size: 12px; color: var(--m-text-muted);">🗑 清空</span>
+  </div>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    {% for h in (search_history or ['色差问题', '印刷模糊', '套印偏差', '夜班产能', '废品率统计', 'PS 版调度']) %}
+    <span style="padding: 5px 12px; background: #f3f4f6; color: var(--m-text); border-radius: 14px; font-size: 12px;">{{ h }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+{# 热门搜索 #}
+<div style="margin-bottom: 18px;">
+  <div style="font-size: 13px; font-weight: 600; color: var(--m-text); margin-bottom: 8px;">🔥 热门搜索</div>
+  {% for h in (search_hot or [
+    '环保油墨切换流程', 'GB/T 7705 质检标准', '紧急插单审批',
+    '工艺路线变更', '设备保养计划', 'OEE 提升专项'
+  ]) %}
+  <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--m-divider);">
+    <span style="width: 18px; height: 18px; border-radius: 4px; background: {% if loop.index <= 3 %}#ef4444{% else %}#9ca3af{% endif %}; color:#fff; text-align:center; line-height:18px; font-size: 11px; font-weight: 600;">{{ loop.index }}</span>
+    <span style="flex:1; font-size: 13px; color: var(--m-text);">{{ h }}</span>
+    {% if loop.index <= 2 %}<span class="m-badge red" style="font-size: 10px;">HOT</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{# 搜索建议 #}
+<div>
+  <div style="font-size: 13px; font-weight: 600; color: var(--m-text); margin-bottom: 8px;">智能推荐</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+    {% for s in (search_suggest or ['车间巡检', '设备点检', '物料盘点', '出库记录']) %}
+    <div style="padding: 12px; background: var(--m-card); border-radius: 10px; font-size: 13px; text-align: center; color: var(--m-text);">{{ s }}</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
