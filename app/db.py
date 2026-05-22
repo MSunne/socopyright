@@ -30,6 +30,7 @@ def _migrations_for(dialect: str) -> list[tuple[str, str, str]]:
         ("job_files", "progress", "INTEGER NOT NULL DEFAULT 0"),
         ("jobs", "is_deleted", f"BOOLEAN NOT NULL DEFAULT {b_false}"),
         ("jobs", "started_at", "DATETIME"),  # nullable；用于"纯处理耗时"（排除排队/中断等待）
+        ("jobs", "owner_kind", "VARCHAR(16) NOT NULL DEFAULT 'company'"),
     ]
 
 

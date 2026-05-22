@@ -58,6 +58,7 @@ async def create_job(
 ) -> Job:
     job = Job(
         user_id=user["id"],
+        owner_kind=body.owner_kind,
         company_name=body.company_name,
         uscc=body.uscc,
         established_date=body.established_date,

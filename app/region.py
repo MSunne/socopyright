@@ -173,3 +173,50 @@ def validate_uscc(code: str) -> tuple[bool, str]:
     if code[17] != expected:
         return False, f"第 18 位校验码错误，应为 {expected}"
     return True, ""
+
+
+# ---------------------------------------------------------------------------
+# GB 11643-1999 居民身份证号码校验（18 位）
+# ---------------------------------------------------------------------------
+
+_ID_CARD_WEIGHTS = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+_ID_CARD_CHECK = "10X98765432"
+_ID_CARD_RE = re.compile(r"^\d{17}[\dX]$")
+
+
+def validate_id_card(code: str) -> tuple[bool, str]:
+    """校验居民身份证号码（GB 11643-1999，18 位）。"""
+    if not isinstance(code, str):
+        return False, "必须是字符串"
+    code = code.strip().upper()
+    if len(code) != 18:
+        return False, "长度必须为 18 位"
+    if not _ID_CARD_RE.match(code):
+        return False, "格式不合法（前 17 位必须是数字，第 18 位为数字或 X）"
+    # 出生日期粗校验
+    yyyy = int(code[6:10])
+    mm = int(code[10:12])
+    dd = int(code[12:14])
+    if not (1900 <= yyyy <= 2099 and 1 <= mm <= 12 and 1 <= dd <= 31):
+        return False, "出生日期段不合法"
+    # 行政区划前 2 位必须命中省级代码
+    if code[:2] not in PROVINCES:
+        return False, "省级代码不合法"
+    s = sum(int(c) * w for c, w in zip(code[:17], _ID_CARD_WEIGHTS))
+    expected = _ID_CARD_CHECK[s % 11]
+    if code[17] != expected:
+        return False, f"第 18 位校验码错误，应为 {expected}"
+    return True, ""
+
+
+def parse_id_card(code: str) -> dict[str, str]:
+    """从身份证号解析省份/城市（前 6 位行政区划，复用 GB/T 2260）。"""
+    code = (code or "").strip().upper()
+    if len(code) != 18 or not code[:6].isdigit():
+        return {"province": "", "city": "", "region_code": ""}
+    region = code[:6]
+    return {
+        "province": PROVINCES.get(region[:2], ""),
+        "city": CITIES.get(region[:4], ""),
+        "region_code": region,
+    }

@@ -198,22 +198,57 @@
         </div>
       </div>
       <form @submit.prevent="submitJob()" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-        <div>
-          <div class="field-label mb-1.5">公司名称 <span class="text-red-500">*</span></div>
-          <input x-model="jobForm.company_name" class="field-input" placeholder="例如：武汉兰亭印务有限公司" required />
-          <div class="text-xs text-slate-400 mt-1" x-show="jobForm.company_name.length>0 && jobForm.company_name.trim().length<4">公司名称过短（至少 4 字）</div>
+        <div class="md:col-span-2">
+          <div class="field-label mb-1.5">著作权人类型 <span class="text-red-500">*</span></div>
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border cursor-pointer text-sm"
+                   :class="jobForm.owner_kind==='company' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'">
+              <input type="radio" value="company" x-model="jobForm.owner_kind" class="accent-brand-600" />
+              <span>公司 / 单位</span>
+            </label>
+            <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border cursor-pointer text-sm"
+                   :class="jobForm.owner_kind==='individual' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'">
+              <input type="radio" value="individual" x-model="jobForm.owner_kind" class="accent-brand-600" />
+              <span>个人</span>
+            </label>
+          </div>
         </div>
         <div>
-          <div class="field-label mb-1.5">统一社会信用代码 <span class="text-red-500">*</span></div>
-          <input x-model="jobForm.uscc" @input="jobForm.uscc=jobForm.uscc.toUpperCase()" maxlength="18" minlength="18" class="field-input font-mono" placeholder="18 位字母数字组合（不含 I O S V Z）" required />
+          <div class="field-label mb-1.5">
+            <span x-text="jobForm.owner_kind==='individual' ? '姓名' : '公司名称'"></span>
+            <span class="text-red-500">*</span>
+          </div>
+          <input x-model="jobForm.company_name" class="field-input"
+                 :placeholder="jobForm.owner_kind==='individual' ? '例如：张三' : '例如：武汉兰亭印务有限公司'" required />
+          <div class="text-xs text-slate-400 mt-1"
+               x-show="jobForm.owner_kind==='company' && jobForm.company_name.length>0 && jobForm.company_name.trim().length<4">
+            公司名称过短（至少 4 字）
+          </div>
+          <div class="text-xs text-slate-400 mt-1"
+               x-show="jobForm.owner_kind==='individual' && jobForm.company_name.length>0 && jobForm.company_name.trim().length<2">
+            姓名过短（至少 2 字）
+          </div>
+        </div>
+        <div>
+          <div class="field-label mb-1.5">
+            <span x-text="jobForm.owner_kind==='individual' ? '身份证号' : '统一社会信用代码'"></span>
+            <span class="text-red-500">*</span>
+          </div>
+          <input x-model="jobForm.uscc" @input="jobForm.uscc=jobForm.uscc.toUpperCase()" maxlength="18" minlength="18" class="field-input font-mono"
+                 :placeholder="jobForm.owner_kind==='individual' ? '18 位居民身份证号（末位可为 X）' : '18 位字母数字组合（不含 I O S V Z）'" required />
           <div class="text-xs mt-1"
-               :class="usccHint.ok ? 'text-emerald-600' : 'text-amber-600'"
+               :class="credHint.ok ? 'text-emerald-600' : 'text-amber-600'"
                x-show="jobForm.uscc.length>0"
-               x-text="usccHint.msg"></div>
+               x-text="credHint.msg"></div>
         </div>
         <div>
-          <div class="field-label mb-1.5">公司成立日期 <span class="text-red-500">*</span></div>
-          <input type="date" x-model="jobForm.established_date" :max="todayStr" min="1990-01-01" class="field-input" required />
+          <div class="field-label mb-1.5">
+            <span x-text="jobForm.owner_kind==='individual' ? '出生日期' : '公司成立日期'"></span>
+            <span class="text-red-500">*</span>
+          </div>
+          <input type="date" x-model="jobForm.established_date" :max="todayStr"
+                 :min="jobForm.owner_kind==='individual' ? '1900-01-01' : '1990-01-01'"
+                 class="field-input" required />
         </div>
         <div>
           <div class="field-label mb-1.5">生成数量 <span class="text-red-500">*</span></div>
@@ -637,7 +672,7 @@ function app() {
     token: localStorage.getItem('token') || '',
     username: localStorage.getItem('username') || '',
     loginForm: { username: '', password: '' },
-    jobForm: { company_name: '', uscc: '', established_date: '', quantity: 1, keywords_raw: '', language: '', template: 'basic' },
+    jobForm: { owner_kind: 'company', company_name: '', uscc: '', established_date: '', quantity: 1, keywords_raw: '', language: '', template: 'basic' },
     loginError: '', jobError: '',
     loggingIn: false, submitting: false, refreshing: false,
     activeJobs: [], historyJobs: [],
@@ -657,11 +692,15 @@ function app() {
       return d.toISOString().slice(0, 10);
     },
 
-    // USCC 实时提示：仅校验长度 + 字符集（GB 32100 校验位由后端兜底）
-    get usccHint() {
+    // USCC / 身份证 实时提示：仅校验长度 + 字符集（校验位由后端兜底）
+    get credHint() {
       const v = (this.jobForm.uscc || '').toUpperCase();
       if (v.length === 0) return { ok: true, msg: '' };
       if (v.length !== 18) return { ok: false, msg: `已输入 ${v.length} 位，需要 18 位` };
+      if (this.jobForm.owner_kind === 'individual') {
+        if (!/^\d{17}[\dX]$/.test(v)) return { ok: false, msg: '格式不合法（前 17 位数字，末位数字或 X）' };
+        return { ok: true, msg: '格式校验通过（校验位由后端验证）' };
+      }
       if (/[IOSVZ]/.test(v)) return { ok: false, msg: '不允许包含 I O S V Z' };
       if (!/^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$/.test(v)) return { ok: false, msg: '格式不合法（前 2 位字母数字、3-8 位数字、其余字母数字）' };
       return { ok: true, msg: '格式校验通过（校验位由后端验证）' };
@@ -796,6 +835,7 @@ function app() {
       this.jobError = ''; this.submitting = true;
       const keywords = this.jobForm.keywords_raw.split(/[,，\n]/).map(s=>s.trim()).filter(Boolean);
       const body = {
+        owner_kind: this.jobForm.owner_kind || 'company',
         company_name: this.jobForm.company_name,
         uscc: this.jobForm.uscc,
         established_date: this.jobForm.established_date,

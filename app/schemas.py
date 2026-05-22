@@ -1,9 +1,10 @@
 import re
 from datetime import date, datetime, timedelta
+from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.region import validate_uscc
+from app.region import validate_id_card, validate_uscc
 
 
 class LoginReq(BaseModel):
@@ -44,6 +45,9 @@ _MULTI_WS = re.compile(r"\s+")
 
 
 class JobCreate(BaseModel):
+    # owner_kind=company：company_name + 18 位 USCC
+    # owner_kind=individual：personal_name + 18 位身份证号（同字段 company_name / uscc 复用以最小改动）
+    owner_kind: Literal["company", "individual"] = "company"
     company_name: str = Field(min_length=2, max_length=255)
     uscc: str = Field(min_length=18, max_length=18)
     established_date: date
@@ -58,27 +62,35 @@ class JobCreate(BaseModel):
         # 全角符号转半角 + strip + 折叠多空格
         v = v.translate(_FULLWIDTH_TR).strip()
         v = _MULTI_WS.sub(" ", v)
-        if len(v) < 4:
-            raise ValueError("公司名称过短（至少 4 字）")
         return v
 
-    @field_validator("uscc")
-    @classmethod
-    def _check_uscc(cls, v: str) -> str:
-        v = v.strip().upper()
-        ok, reason = validate_uscc(v)
-        if not ok:
-            raise ValueError(f"统一社会信用代码不合法：{reason}")
-        return v
+    @model_validator(mode="after")
+    def _check_owner(self) -> "JobCreate":
+        if self.owner_kind == "company":
+            if len(self.company_name) < 4:
+                raise ValueError("公司名称过短（至少 4 字）")
+            ok, reason = validate_uscc(self.uscc)
+            if not ok:
+                raise ValueError(f"统一社会信用代码不合法：{reason}")
+            # 规范化大写
+            object.__setattr__(self, "uscc", self.uscc.strip().upper())
+        else:  # individual
+            if len(self.company_name) < 2:
+                raise ValueError("姓名过短（至少 2 字）")
+            ok, reason = validate_id_card(self.uscc)
+            if not ok:
+                raise ValueError(f"身份证号不合法：{reason}")
+            object.__setattr__(self, "uscc", self.uscc.strip().upper())
+        return self
 
     @field_validator("established_date")
     @classmethod
     def _check_established(cls, v: date) -> date:
         today = date.today()
         if v >= today:
-            raise ValueError("公司成立日期必须早于今天")
-        if v < date(1990, 1, 1):
-            raise ValueError("公司成立日期不应早于 1990-01-01")
+            raise ValueError("日期必须早于今天")
+        if v < date(1900, 1, 1):
+            raise ValueError("日期不应早于 1900-01-01")
         return v
 
 
@@ -96,6 +108,7 @@ class JobFileOut(BaseModel):
 
 class JobOut(BaseModel):
     id: str
+    owner_kind: str = "company"
     company_name: str
     uscc: str
     established_date: date

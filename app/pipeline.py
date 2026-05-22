@@ -320,6 +320,7 @@ async def run_job(job_id: str) -> None:
             logger.error("Job 不存在: %s", job_id)
             return
         job_snapshot = {
+            "owner_kind": getattr(job, "owner_kind", "company") or "company",
             "company_name": job.company_name,
             "uscc": job.uscc,
             "established_date": job.established_date,
@@ -343,6 +344,7 @@ async def run_job(job_id: str) -> None:
             quantity=job_snapshot["quantity"],
             keywords=job_snapshot["keywords"],
             language=job_snapshot["language"],
+            owner_kind=job_snapshot["owner_kind"],
         )
         if len(specs) != job_snapshot["quantity"]:
             logger.warning("Spec 数量异常：请求 %d 生成 %d", job_snapshot["quantity"], len(specs))
@@ -367,6 +369,7 @@ async def run_job(job_id: str) -> None:
                     quantity=len(bad_idx),
                     keywords=used,  # 把已有名传进去当主题，避免再产出一样的
                     language=job_snapshot["language"],
+                    owner_kind=job_snapshot["owner_kind"],
                 )
             except Exception as e:
                 logger.warning("dedup 重生 specs 失败：%s", e)

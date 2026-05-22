@@ -158,7 +158,7 @@ def render(spec: dict, *, output_path: str | Path, today: date | None = None) ->
     # 身份证明
     set_cell_text(
         t3.cell(5, 1),
-        f"著作权人 - {owner.get('name', '')} 的统一社会信用代码证书复印件                                       1页",
+        f"著作权人 - {owner.get('name', '')} 的{owner.get('cert_type', '统一社会信用代码证书')}复印件                                       1页",
     )
     # 软件鉴别材料页数：申请表 t1[2,2]/t1[3,2] 已声明"一般交存（前30+后30）"，
     # 此处填实际提交给版权中心的页数 = 60。pipeline 在打 zip 前会用

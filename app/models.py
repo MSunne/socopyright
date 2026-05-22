@@ -26,6 +26,9 @@ class Job(Base):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
     user_id: Mapped[int] = mapped_column(Integer, index=True)
+    # owner_kind=company：company_name 存公司名、uscc 存 18 位 USCC
+    # owner_kind=individual：company_name 存姓名、uscc 存 18 位身份证号
+    owner_kind: Mapped[str] = mapped_column(String(16), default="company")
     company_name: Mapped[str] = mapped_column(String(255))
     uscc: Mapped[str] = mapped_column(String(32))
     established_date: Mapped[date] = mapped_column(Date)

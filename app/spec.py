@@ -13,7 +13,7 @@ from datetime import date, timedelta
 from typing import Any
 
 from . import llm
-from .region import parse_uscc
+from .region import parse_id_card, parse_uscc
 
 logger = logging.getLogger(__name__)
 
@@ -425,8 +425,12 @@ async def generate_specs(
     quantity: int,
     keywords: list[str] | None = None,
     language: str | None = None,
+    owner_kind: str = "company",
 ) -> list[dict]:
-    """给定企业信息和数量，生成 N 份 ProjectSpec。
+    """给定著作权人信息和数量，生成 N 份 ProjectSpec。
+
+    owner_kind="company"  → company_name 是公司名、uscc 是 18 位 USCC
+    owner_kind="individual" → company_name 是个人姓名、uscc 是 18 位身份证号
 
     - 用户提供的 keywords 直接作为主题；不足 quantity 时调 LLM 补齐
     - language 未指定时从 _DEFAULT_LANG_POOL 为每份项目随机选
@@ -435,7 +439,10 @@ async def generate_specs(
     given = keywords[:quantity]
     need = max(0, quantity - len(given))
 
-    region = parse_uscc(uscc)
+    if owner_kind == "individual":
+        region = parse_id_card(uscc)
+    else:
+        region = parse_uscc(uscc)
     province, city = region["province"], region["city"]
 
     # 1. 补齐主题：LLM retry 最多 3 次，把已用 topic 列表传回去避免雷同。
@@ -465,8 +472,13 @@ async def generate_specs(
         )
     topics = topics[:quantity]
 
-    # 2. owner 类型 + 证件类型 由 USCC 第 1 位决定（O9）
-    owner_type, cert_type = _owner_kind_by_uscc(uscc)
+    # 2. owner 类型 + 证件类型
+    #    company → 由 USCC 第 1 位决定（O9）
+    #    individual → 固定"自然人 / 居民身份证"
+    if owner_kind == "individual":
+        owner_type, cert_type = "自然人", "居民身份证"
+    else:
+        owner_type, cert_type = _owner_kind_by_uscc(uscc)
 
     # 3. 每份 Spec 并行生成（受 llm._sem 全局限流）
     async def _one(idx: int, topic: str) -> dict:
